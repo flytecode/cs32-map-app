@@ -30,13 +30,28 @@ let CURRENT_ELEMENT = {
 window.onload = () => {
     // Maps page elements
     mapPage()
-    // Cycle through every element
-    for (let i = 0; i < ALL_ELEMENTS.length; i++) {
-        // Get current element using page map
-        let newElement = document.getElementById(PAGE_MAP[i])
-        // Speak the current element according to the handler
-        CURRENT_ELEMENT.setAndSpeak(newElement)
-    }
+
+    document.addEventListener('keyup', event => {
+        // Starts the reader
+        if (event.code === 'KeyP') {
+            event.preventDefault();
+            // Cycle through every element
+            for (let i = 0; i < ALL_ELEMENTS.length; i++) {
+                // Get current element using page map
+                let newElement = document.getElementById(PAGE_MAP[i])
+                // Speak the current element according to the handler
+                CURRENT_ELEMENT.setAndSpeak(newElement)
+            }
+        }
+        // Pauses and unpauses the reader
+        if (event.code === 'KeyS') {
+            event.preventDefault();
+            window.speechSynthesis.pause()
+            if(window.speechSynthesis.paused){
+                window.speechSynthesis.resume()
+            }
+        }
+    })
 }
 
 const mapPage = () => {
