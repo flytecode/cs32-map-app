@@ -2,47 +2,49 @@
 let ALL_ELEMENTS = [] // Contains all the elements
 let PAGE_MAP = {} // A mapping of elements to i
 
-// here's a hint at a potential way to keep track of the current element
-// DO NOT IMPLEMENT THIS BEFORE FIGURING OUT YOUR HTML SPEC AND CORE FUNCTIONALITY
 let CURRENT_ELEMENT = {
     // a function that updates this.value to newElement and reads the element
-    setAndSpeak: async (newElement) => {},
-    // the current element
-    value: null
+    setAndSpeak: (newElement) => {
+        // Set element
+        this.value = newElement
+        // Speak if the element isn't null
+        if(this.value !== null) {
+            // Get current tag name
+            let CURRENT_TAG = this.value.tagName
+
+            console.log(CURRENT_TAG)
+            // Call the correct method for the given tag name
+            let CURRENT_CATEGORY = ROLES[CURRENT_TAG]
+            // Get the function to handle speech for the current tag
+            let SPEECH_HANDLER = HANDLERS[CURRENT_CATEGORY]
+            // This makes sure the speech handler is a function like we want
+            if(typeof SPEECH_HANDLER === 'function') {
+                SPEECH_HANDLER(this.value)
+            }
+        }
+    },
+    value: null,
 }
 
 // Called when the window is loaded
 window.onload = () => {
-    /* TODO: initialize Speech API object, inject HTML, get page elements, and initialize event listeners here */
+    // Maps page elements
     mapPage()
-    let VOICE_SYNTH = window.speechSynthesis
-
     // Cycle through every element
     for (let i = 0; i < ALL_ELEMENTS.length; i++) {
         // Get current element using page map
-        let CURRENT_ELEMENT = document.getElementById(PAGE_MAP[i])
-        if (CURRENT_ELEMENT !== null){
-            // Get current tag name
-            let CURRENT_TAG = CURRENT_ELEMENT.tagName
-            console.log(CURRENT_TAG)
-
-            // Call the correct method for the given tag name
-            let CURRENT_CATEGORY = ROLES[CURRENT_TAG]
-
-            let SPEECH_HANDLER = HANDLERS[CURRENT_CATEGORY]
-
-            if(typeof SPEECH_HANDLER === 'function') {
-                SPEECH_HANDLER(CURRENT_ELEMENT, VOICE_SYNTH)
-            }
-        }
+        let newElement = document.getElementById(PAGE_MAP[i])
+        // Speak the current element according to the handler
+        CURRENT_ELEMENT.setAndSpeak(newElement)
     }
 }
 
 const mapPage = () => {
+    // Get the elements
     if (ALL_ELEMENTS.length === 0){
         ALL_ELEMENTS = document.body.getElementsByTagName("*")
     }
-
+    // Assign every element an id
     for (let i = 0; i < ALL_ELEMENTS.length; i++) {
         const currentElement = ALL_ELEMENTS[i]
         if (!currentElement.id){
@@ -52,40 +54,87 @@ const mapPage = () => {
     }
 }
 
-// // just testing writing
-// function title
-
-// maps element categories to reading handlers (these should return strings)
-// category -> function (that reads)
-
-const sectionHandler = (currentElement, VOICE_SYNTH) => {
-    let textToSpeak = "You are in the " + currentElement.tagName + "section"
-    voiceOver(textToSpeak, VOICE_SYNTH)
-}
-
-const textHandler = (currentElement, VOICE_SYNTH) => {
+// Handles tags that are in the metadata category
+// TODO temporarily the same as the text handler
+const metadataHandler = (currentElement) => {
     let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak, VOICE_SYNTH)
+    voiceOver(textToSpeak)
 }
 
-const voiceOver = (textToSpeak, VOICE_SYNTH) => {
-    let synth = VOICE_SYNTH
-    let voices = synth.getVoices()
+// Handles tags that are in the section category
+const sectionHandler = (currentElement) => {
+    let textToSpeak = "You are in the " + currentElement.tagName + "section"
+    voiceOver(textToSpeak)
+}
+
+// Handles tags that are in the text category
+const textHandler = (currentElement) => {
+    let textToSpeak = currentElement.innerText
+    voiceOver(textToSpeak)
+}
+
+// Handles tags that are in the metadata category
+// TODO temporarily the same as the text handler
+const groupsHandler = (currentElement) => {
+    let textToSpeak = currentElement.innerText
+    voiceOver(textToSpeak)
+}
+
+// Handles tags that are in the metadata category
+// TODO temporarily the same as the text handler
+const figuresHandler = (currentElement) => {
+    let textToSpeak = currentElement.innerText
+    voiceOver(textToSpeak)
+}
+
+// TODO temporarily the same as the text handler
+const listHandler = (currentElement) => {
+    let textToSpeak = currentElement.innerText
+    voiceOver(textToSpeak)
+}
+
+// TODO temporarily the same as the text handler
+const interactiveHandler = (currentElement) => {
+    let textToSpeak = currentElement.innerText
+    voiceOver(textToSpeak)
+}
+
+// TODO temporarily the same as the text handler
+const tableHandler = (currentElement) => {
+    let textToSpeak = currentElement.innerText
+    voiceOver(textToSpeak)
+}
+
+// TODO temporarily the same as the text handler
+const multimediaHandler = (currentElement) => {
+    let textToSpeak = currentElement.innerText
+    voiceOver(textToSpeak)
+}
+
+// TODO temporarily the same as the text handler
+const formHandler = (currentElement) => {
+    let textToSpeak = currentElement.innerText
+    voiceOver(textToSpeak)
+}
+
+
+const voiceOver = (textToSpeak) => {
+    let voices = window.speechSynthesis.getVoices()
     let utterThis = new SpeechSynthesisUtterance(textToSpeak)
-    synth.speak(utterThis)
+    window.speechSynthesis.speak(utterThis)
 }
 
 const HANDLERS = {
-    "metadata" : textHandler,
+    "metadata" : metadataHandler,
     "section" : sectionHandler,
     "text" : textHandler,
-    "groups" : textHandler,
-    "figures" : textHandler,
-    "list" : textHandler,
-    "interactive" : textHandler,
-    "table" : textHandler,
-    "multimedia" : textHandler,
-    "form" : textHandler,
+    "groups" : groupsHandler,
+    "figures" : figuresHandler,
+    "list" : listHandler,
+    "interactive" : interactiveHandler,
+    "table" : tableHandler,
+    "multimedia" : multimediaHandler,
+    "form" : formHandler,
 }
 
 
@@ -110,12 +159,6 @@ const ROLES = {
     "H4" : "text",
     "H5" : "text",
     "H6" : "text",
-
-    "CODE" : "text",
-    "TIME" : "text",
-    "DIV" : "text",
-
-
 
     "BLOCKQUOTE" : "groups",
     "FIGCAPTION" : "groups",
@@ -150,18 +193,5 @@ const ROLES = {
     "PROGRESS" : "form",
     "SELECT" : "form",
     "TEXTAREA" : "form",
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
