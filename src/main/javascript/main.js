@@ -11,6 +11,33 @@ let CURRENT_ELEMENT = {
     value: null
 }
 
+// Called when the window is loaded
+window.onload = () => {
+    /* TODO: initialize Speech API object, inject HTML, get page elements, and initialize event listeners here */
+    mapPage()
+    let VOICE_SYNTH = window.speechSynthesis
+
+    // Cycle through every element
+    for (let i = 0; i < ALL_ELEMENTS.length; i++) {
+        // Get current element using page map
+        let CURRENT_ELEMENT = document.getElementById(PAGE_MAP[i])
+        if (CURRENT_ELEMENT !== null){
+            // Get current tag name
+            let CURRENT_TAG = CURRENT_ELEMENT.tagName
+            console.log(CURRENT_TAG)
+
+            // Call the correct method for the given tag name
+            let CURRENT_CATEGORY = ROLES[CURRENT_TAG]
+
+            let SPEECH_HANDLER = HANDLERS[CURRENT_CATEGORY]
+
+            if(typeof SPEECH_HANDLER === 'function') {
+                SPEECH_HANDLER(CURRENT_ELEMENT, VOICE_SYNTH)
+            }
+        }
+    }
+}
+
 const mapPage = () => {
     if (ALL_ELEMENTS.length === 0){
         ALL_ELEMENTS = document.body.getElementsByTagName("*")
@@ -32,7 +59,7 @@ const mapPage = () => {
 // category -> function (that reads)
 
 const sectionHandler = (currentElement, VOICE_SYNTH) => {
-    let textToSpeak = "You are in the " + currentElement.tagName.toString() + "section"
+    let textToSpeak = "You are in the " + currentElement.tagName + "section"
     voiceOver(textToSpeak, VOICE_SYNTH)
 }
 
@@ -49,8 +76,16 @@ const voiceOver = (textToSpeak, VOICE_SYNTH) => {
 }
 
 const HANDLERS = {
+    "metadata" : textHandler,
     "section" : sectionHandler,
-    "text" : textHandler
+    "text" : textHandler,
+    "groups" : textHandler,
+    "figures" : textHandler,
+    "list" : textHandler,
+    "interactive" : textHandler,
+    "table" : textHandler,
+    "multimedia" : textHandler,
+    "form" : textHandler,
 }
 
 
@@ -58,50 +93,75 @@ const HANDLERS = {
 // maps element tag names to element categories
 // element tag -> category
 const ROLES = {
-    "header" : "section",
-    "aside" : "section",
-    "article" : "section",
-    "footer" : "section",
-    "main" : "section",
-    "nav" : "section",
-    "section" : "section",
-    // h1, h2, -> text
-    "p" : "text",
-    "blockquote" : "groups",
-    "figcaption" : "groups",
-    "cite" : "groups",
-    "caption" : "groups",
-    // is this necessary cuz lemme look up if there is a function that gets us the tag type
-}
+    "TITLE" : "metadata",
 
-// Called when the
-window.onload = () => {
-    /* TODO: initialize Speech API object, inject HTML, get page elements, and initialize event listeners here */
-    mapPage()
-    let VOICE_SYNTH = window.speechSynthesis
-    console.log(PAGE_MAP)
+    "HEADER" : "section",
+    "ASIDE" : "section",
+    "ARTICLE" : "section",
+    "FOOTER" : "section",
+    "MAIN" : "section",
+    "NAV" : "section",
+    "SECTION" : "section",
 
-    // // Cycle through every element
-    // for (let i = 0; i < ALL_ELEMENTS.length; i++) {
-    //     let current = document.getElementById(PAGE_MAP[i].toString()).innerText
-    //
-    //
-    //
-    //     let utterThis = new SpeechSynthesisUtterance(current)
-    //     VOICE_SYNTH.speak(utterThis)
-    // }
+    "P" : "text",
+    "H1" : "text",
+    "H2" : "text",
+    "H3" : "text",
+    "H4" : "text",
+    "H5" : "text",
+    "H6" : "text",
 
-    // Cycle through every element
-    for (let i = 0; i < ALL_ELEMENTS.length; i++) {
-        // Get current element using page map
-        let currentElement = document.getElementById(PAGE_MAP[i].toString())
-        // Get current tag name
-        let curTagName = currentElement.tagName
-        // Call the correct method for the given tag name
-        let curTagCategory = ROLES[curTagName]
-        console.log()
+    "CODE" : "text",
+    "TIME" : "text",
+    "DIV" : "text",
 
-        //HANDLERS[curTagCategory](currentElement, VOICE_SYNTH)
-    }
+
+
+    "BLOCKQUOTE" : "groups",
+    "FIGCAPTION" : "groups",
+    "CITE" : "groups",
+    "CAPTION" : "groups",
+
+    "FIGURE" : "figures",
+    "IMG" : "figures",
+    "CANVAS" : "figures",
+    "SVG" : "figures",
+
+    "LI" : "list",
+    "UL" : "list",
+    "OL" : "list",
+
+    "BUTTON" : "interactive",
+    "A" : "interactive",
+    "INPUT" : "interactive",
+
+    "TABLE" : "table",
+    "TD" : "table",
+    "TFOOT" : "table",
+    "TH" : "table",
+    "TR" : "table",
+
+    "AUDIO" : "multimedia",
+
+    "FIELDSET" : "form",
+    "FORM" : "form",
+    "LABEL" : "form",
+    "OPTION" : "form",
+    "PROGRESS" : "form",
+    "SELECT" : "form",
+    "TEXTAREA" : "form",
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
