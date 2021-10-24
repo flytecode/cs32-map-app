@@ -30,7 +30,6 @@ let CURRENT_ELEMENT = {
 window.onload = () => {
     // Maps page elements
     mapPage()
-
     document.addEventListener('keyup', event => {
         // Starts the reader
         if (event.code === 'KeyP') {
@@ -51,6 +50,8 @@ window.onload = () => {
                 window.speechSynthesis.resume()
             }
         }
+
+        // TODO forwards and backwards
     })
 }
 
@@ -68,6 +69,8 @@ const mapPage = () => {
         PAGE_MAP[currentElement.id] = i
     }
 }
+
+// TODO injectHTML()
 
 // Handles tags that are in the metadata category
 // TODO temporarily the same as the text handler
@@ -139,6 +142,7 @@ const voiceOver = (textToSpeak) => {
     window.speechSynthesis.speak(utterThis)
 }
 
+// maps element category names to handler functions
 const HANDLERS = {
     "metadata" : metadataHandler,
     "section" : sectionHandler,
@@ -151,8 +155,6 @@ const HANDLERS = {
     "multimedia" : multimediaHandler,
     "form" : formHandler,
 }
-
-
 
 // maps element tag names to element categories
 // element tag -> category
