@@ -170,6 +170,7 @@ const ROLES = {
     "SECTION" : "section",
 
     "P" : "text",
+    "TEXT" : "text",
     "H1" : "text",
     "H2" : "text",
     "H3" : "text",
