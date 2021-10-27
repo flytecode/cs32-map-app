@@ -66,38 +66,39 @@ window.onload = () => {
             // cancel removes all utterances from the utterance queue
         }
 
-        // TODO forwards and backwards - do we want it to loop on its own or only work on command
-        // reads forwards and backwards
+        // Reads the previous section when prompted by KeyB
         if (event.code === 'KeyB') {
-            yesBackwards = true
             event.preventDefault();
 
             // pause what the screen reader was reading
             window.speechSynthesis.pause()
 
-            // Cycle as long as the user wants to read backwards
-            while (yesBackwards == true){
-            // announce whether the user would like to read the previous one
-            // announce previous section/element of document
-            let anncmntToSpeak = "Would you like to read the previous section?"
-            + "The previous section is" + currentElement.previous.tagName
+            // announce what previous section is
+            // ask whether the user wants continuous or prompted backward read
+            let anncmntToSpeak =
+            + "The previous section is" + prevElement.tagName +
+            "To read backwards one section at a time, hit" + "KeyB Name"
+            + "once." + "To read backwards without pausing, hit" + "KeyB Name"
+            + "twice."
                 voiceOver(anncmntToSpeak)
 
-            // announce whether the user would like to read the previous one
-            // if yes then read previous
-            if (event.code) {
-            yesBackwards = true
-            }
-            else {
-            yesBackwards = false
-            }
-            // if no then abort loop
-
-            }
-
+            CURRENT_ELEMENT.setAndSpeak(prevElement)
         }
 
 
+        // Reads backwards until beginning of document
+        if (event.code === 'KeyB' + 'KeyB') {
+            event.preventDefault();
+
+            // pause what the screen reader was reading
+            window.speechSynthesis.pause()
+
+            // Cycle through until beginning of document
+            for (let i = prevId; i > -1; i--) {
+                 // Speak the previous element according to the handler
+                 CURRENT_ELEMENT.setAndSpeak(prevElement)
+            }
+        }
     })
 }
 
@@ -109,6 +110,8 @@ const mapPage = () => {
     // Assign every element an id
     for (let i = 0; i < ALL_ELEMENTS.length; i++) {
         const currentElement = ALL_ELEMENTS[i]
+        const prevElement = All_ELEMENTS[i-1]
+        const prevId = i-1
         if (!currentElement.id){
             currentElement.id = i
         }
