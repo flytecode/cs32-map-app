@@ -77,17 +77,15 @@ window.onload = () => {
             // ask whether the user wants continuous or prompted backward read
             let anncmntToSpeak =
             + "The previous section is" + prevElement.tagName +
-            "To read backwards one section at a time, hit" + "KeyB Name"
-            + "once." + "To read backwards without pausing, hit" + "KeyB Name"
-            + "twice."
+            "To read backwards one section at a time, hit" + "B"
+            + "once." + "To read backwards without pausing, hit" + "V."
                 voiceOver(anncmntToSpeak)
 
             CURRENT_ELEMENT.setAndSpeak(prevElement)
         }
 
-
         // Reads backwards until beginning of document
-        if (event.code === 'KeyB' + 'KeyB') {
+        if (event.code === 'KeyV') {
             event.preventDefault();
 
             // pause what the screen reader was reading
