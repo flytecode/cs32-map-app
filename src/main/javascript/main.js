@@ -1,8 +1,12 @@
 //Global Variables
-let ALL_ELEMENTS = [] // Contains all the elements
+let ALL_ELEMENTS = [] // Contains all of the elements of HTML
 let PAGE_MAP = {} // A mapping of elements to i
+// TODO define ALL_ELEMENTS and PAGE_MAP better
 
+// CLASS CURRENT_ELEMENT
 let CURRENT_ELEMENT = {
+
+    // FUNCTION setAndSpeak
     // a function that updates this.value to newElement and reads the element
     setAndSpeak: (newElement) => {
         // Set element
@@ -24,6 +28,7 @@ let CURRENT_ELEMENT = {
         }
     },
     value: null,
+    // reset before operating again
 }
 
 // Called when the window is loaded
@@ -31,10 +36,12 @@ window.onload = () => {
     // Maps page elements
     mapPage()
     document.addEventListener('keyup', event => {
+
         // Starts the reader
         if (event.code === 'KeyP') {
             event.preventDefault();
-            // Cycle through every element
+
+            // Cycle through every element of HTML
             for (let i = 0; i < ALL_ELEMENTS.length; i++) {
                 // Get current element using page map
                 let newElement = document.getElementById(PAGE_MAP[i])
@@ -42,6 +49,7 @@ window.onload = () => {
                 CURRENT_ELEMENT.setAndSpeak(newElement)
             }
         }
+
         // Pauses and unpauses the reader
         if (event.code === 'KeyS') {
             event.preventDefault();
@@ -51,7 +59,45 @@ window.onload = () => {
             }
         }
 
-        // TODO forwards and backwards
+        // Stops the reader
+        if (event.code === 'KeyZ') {
+            event.preventDefault();
+            window.speechSynthesis.cancel()
+            // cancel removes all utterances from the utterance queue
+        }
+
+        // TODO forwards and backwards - do we want it to loop on its own or only work on command
+        // reads forwards and backwards
+        if (event.code === 'KeyB') {
+            yesBackwards = true
+            event.preventDefault();
+
+            // pause what the screen reader was reading
+            window.speechSynthesis.pause()
+
+            // Cycle as long as the user wants to read backwards
+            while (yesBackwards == true){
+            // announce whether the user would like to read the previous one
+            // announce previous section/element of document
+            let anncmntToSpeak = "Would you like to read the previous section?"
+            + "The previous section is" + currentElement.previous.tagName
+                voiceOver(anncmntToSpeak)
+
+            // announce whether the user would like to read the previous one
+            // if yes then read previous
+            if (event.code) {
+            yesBackwards = true
+            }
+            else {
+            yesBackwards = false
+            }
+            // if no then abort loop
+
+            }
+
+        }
+
+
     })
 }
 
@@ -143,6 +189,7 @@ const voiceOver = (textToSpeak) => {
 }
 
 // maps element category names to handler functions
+// element category -> handler
 const HANDLERS = {
     "metadata" : metadataHandler,
     "section" : sectionHandler,
