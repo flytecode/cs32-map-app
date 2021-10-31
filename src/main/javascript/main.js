@@ -7,6 +7,7 @@ let CURRENT_ELEMENT = {
     setAndSpeak: (newElement) => {
         // Set element
         this.value = newElement
+        console.log("this is new element" , newElement)
         // Speak if the element isn't null
         if(this.value !== null) {
             // Get current tag name
@@ -30,13 +31,18 @@ let CURRENT_ELEMENT = {
 window.onload = () => {
     // Maps page elements
     mapPage()
+    addBackwardBtn()
+    addForwardBtn()
+    addPlayPauseBtn()
     document.addEventListener('keyup', event => {
-        // Starts the reader
+       //Starts the reader
         if (event.code === 'KeyP') {
             event.preventDefault();
+            console.log(ALL_ELEMENTS.length)
             // Cycle through every element
             for (let i = 0; i < ALL_ELEMENTS.length; i++) {
                 // Get current element using page map
+                console.log("I am going to move on")
                 let newElement = document.getElementById(PAGE_MAP[i])
                 // Speak the current element according to the handler
                 CURRENT_ELEMENT.setAndSpeak(newElement)
@@ -51,10 +57,56 @@ window.onload = () => {
             }
         }
 
-        // TODO forwards and backwards
+        //TODO forwards and backwards
     })
 }
+// TODO injectHTML()
 
+const addPlayPauseBtn = () => {
+    let playPauseBtn = document.createElement("button");
+    playPauseBtn.innerHTML = "Play/Pause";
+    document.body.insertBefore(playPauseBtn, document.body.firstChild);
+    playPauseBtn.addEventListener("click", event => {
+        window.speechSynthesis.pause()
+        if(window.speechSynthesis.paused) {
+            window.speechSynthesis.resume()
+        }
+    })
+}
+const addForwardBtn = () => {
+    let forwardBtn = document.createElement("button");
+    forwardBtn.innerHTML = "Go Forward";
+    document.body.insertBefore(forwardBtn, document.body.firstChild);
+    forwardBtn.addEventListener("click", event => {
+        //add forward method code
+        console.log("I'm going forward!")
+        }
+    )
+}
+const addBackwardBtn = () => {
+    let backwardBtn = document.createElement("button");
+    backwardBtn.innerHTML = "Go Backward";
+    document.body.insertBefore(backwardBtn, document.body.firstChild);
+    backwardBtn.addEventListener("click", event => {
+            //add backward method code
+            console.log("I'm going backward!")
+        }
+    )
+}
+const voiceOver = (textToSpeak) => {
+    let voices = window.speechSynthesis.getVoices()
+    let utterThis = new SpeechSynthesisUtterance(textToSpeak)
+    window.speechSynthesis.speak(utterThis)
+    return new Promise((resolve) => {
+        window.setInterval(() => {
+            if(!window.speechSynthesis.speaking){
+                resolve()
+            }
+        }
+        ,250
+        )
+    })
+}
 const mapPage = () => {
     // Get the elements
     if (ALL_ELEMENTS.length === 0){
@@ -70,7 +122,7 @@ const mapPage = () => {
     }
 }
 
-// TODO injectHTML()
+
 
 // Handles tags that are in the metadata category
 // TODO temporarily the same as the text handler
@@ -117,16 +169,59 @@ const interactiveHandler = (currentElement) => {
     voiceOver(textToSpeak)
 }
 
+const linkHandler = async (currentElement) => {
+
+    let textToSpeak = "this is a link" + currentElement.innerText
+    voiceOver(textToSpeak)
+    let link = currentElement.href
+    textToSpeak = "the link address is" + link
+    voiceOver(textToSpeak)
+    voiceOver("Would you like to open it in a new window? Press O to open link in new window. Press S to resume voice over")
+    console.log(window.speechSynthesis.speaking)
+    console.log(window.speechSynthesis.paused)
+    window.speechSynthesis.pause()
+    console.log("hi")
+    currentElement.addEventListener('keyup', event => {
+        if (event.code === 'KeyO') {
+            event.preventDefault()
+            window.open(link,"_blank")
+        }
+        if (event.code === 'KeyS'){
+            event.preventDefault()
+            window.speechSynthesis.pause()
+            if(window.speechSynthesis.paused){
+                window.speechSynthesis.resume()
+            }
+        }
+    })
+}
+
+const buttonHandler = async (currentElement) => {
+    let textToSpeak = "this is a button" + currentElement.innerText
+    voiceOver(textToSpeak)
+    textToSpeak = "Would you like to press the button? Press B to press the button. Press S to resume voice over"
+    voiceOver(textToSpeak)
+    currentElement.addEventListener('keyup', event => {
+        if (event.code === 'KeyB') {
+            currentElement.click()
+            }
+    })
+}
+
+const inputHandler = async (currentElement) => {
+    let textToSpeak = "this is an input box" + currentElement.innerText
+}
+
 // TODO temporarily the same as the text handler
-const tableHandler = (currentElement) => {
+const tableHandler = async (currentElement) => {
     let textToSpeak = currentElement.innerText
     voiceOver(textToSpeak)
 }
 
 // TODO temporarily the same as the text handler
-const multimediaHandler = (currentElement) => {
+const multimediaHandler = async (currentElement) => {
     let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
+    await voiceOver(textToSpeak)
 }
 
 // TODO temporarily the same as the text handler
@@ -136,11 +231,7 @@ const formHandler = (currentElement) => {
 }
 
 
-const voiceOver = (textToSpeak) => {
-    let voices = window.speechSynthesis.getVoices()
-    let utterThis = new SpeechSynthesisUtterance(textToSpeak)
-    window.speechSynthesis.speak(utterThis)
-}
+
 
 // maps element category names to handler functions
 const HANDLERS = {
@@ -150,7 +241,9 @@ const HANDLERS = {
     "groups" : groupsHandler,
     "figures" : figuresHandler,
     "list" : listHandler,
-    "interactive" : interactiveHandler,
+    "link":linkHandler,
+    "button": buttonHandler,
+    "input":inputHandler,
     "table" : tableHandler,
     "multimedia" : multimediaHandler,
     "form" : formHandler,
@@ -191,9 +284,9 @@ const ROLES = {
     "UL" : "list",
     "OL" : "list",
 
-    "BUTTON" : "interactive",
-    "A" : "interactive",
-    "INPUT" : "interactive",
+    "BUTTON" : "button",
+    "A" : "link",
+    "INPUT" : "input",
 
     "TABLE" : "table",
     "TD" : "table",
