@@ -232,6 +232,12 @@ const formHandler = (currentElement) => {
     voiceOver(textToSpeak)
 }
 
+// TODO temporarily the same as the text handler
+const buttonHandler = (currentElement) => {
+    let textToSpeak = currentElement.getAttribute("href")
+    voiceOver(textToSpeak)
+}
+
 
 
 
@@ -249,6 +255,7 @@ const HANDLERS = {
     "table" : tableHandler,
     "multimedia" : multimediaHandler,
     "form" : formHandler,
+    "button" : buttonHandler,
 }
 
 // maps element tag names to element categories
@@ -263,6 +270,8 @@ const ROLES = {
     "MAIN" : "section",
     "NAV" : "section",
     "SECTION" : "section",
+    "LI" : "section",
+
 
     "P" : "text",
     "H1" : "text",
@@ -282,7 +291,6 @@ const ROLES = {
     "CANVAS" : "figures",
     "SVG" : "figures",
 
-    "LI" : "list",
     "UL" : "list",
     "OL" : "list",
 
