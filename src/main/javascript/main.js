@@ -33,6 +33,7 @@ let CURRENT_ELEMENT = {
 
 // Called when the window is loaded
 window.onload = () => {
+
     // Maps page elements
     mapPage()
     document.addEventListener('keyup', event => {
@@ -65,8 +66,7 @@ window.onload = () => {
             window.speechSynthesis.cancel()
             // cancel removes all utterances from the utterance queue
         }
-
-        // Reads the previous section when prompted by KeyB
+       /* // Reads the previous section when prompted by KeyB
         if (event.code === 'KeyB') {
             event.preventDefault();
 
@@ -82,8 +82,8 @@ window.onload = () => {
                 voiceOver(anncmntToSpeak)
 
             CURRENT_ELEMENT.setAndSpeak(prevElement)
-        }
-
+        }*/
+/*
         // Reads backwards until beginning of document
         if (event.code === 'KeyV') {
             event.preventDefault();
@@ -96,7 +96,7 @@ window.onload = () => {
                  // Speak the previous element according to the handler
                  CURRENT_ELEMENT.setAndSpeak(prevElement)
             }
-        }
+        }*/
     })
 }
 
@@ -108,8 +108,8 @@ const mapPage = () => {
     // Assign every element an id
     for (let i = 0; i < ALL_ELEMENTS.length; i++) {
         const currentElement = ALL_ELEMENTS[i]
-        const prevElement = All_ELEMENTS[i-1]
-        const prevId = i-1
+/*       const prevElement = All_ELEMENTS[i-1]
+        const prevId = i-1*/
         if (!currentElement.id){
             currentElement.id = i
         }
