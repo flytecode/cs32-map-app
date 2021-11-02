@@ -66,8 +66,8 @@ window.onload = () => {
             window.speechSynthesis.cancel()
             // cancel removes all utterances from the utterance queue
         }
-       /* // Reads the previous section when prompted by KeyB
-        if (event.code === 'KeyB') {
+       // Reads the previous section when prompted by KeyB
+       /* if (event.code === 'KeyB') {
             event.preventDefault();
 
             // pause what the screen reader was reading
@@ -81,7 +81,7 @@ window.onload = () => {
             + "once." + "To read backwards without pausing, hit" + "V."
                 voiceOver(anncmntToSpeak)
 
-            CURRENT_ELEMENT.setAndSpeak(prevElement)
+            CURRENT_ELEMENT.setAndSpeak(prevqueue)
         }*/
 /*
         // Reads backwards until beginning of document
