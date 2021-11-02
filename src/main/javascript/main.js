@@ -45,7 +45,17 @@ window.onload = () => {
                 // Get current element using page map
                let newElement = document.getElementById(PAGE_MAP[i])
                 // Speak the current element according to the handler
-               CURRENT_ELEMENT.setAndSpeak(newElement)
+                newElement.setAttribute('current', 'current')
+                const styleElement = document.createElement( 'style' );
+                styleElement.textContent = `[current] {
+                    outline: 5px rgba( 0, 0, 0, .7 ) solid !important;
+                }
+                html[current] {
+                    outline-offset: -5px;
+                }`;
+                document.head.appendChild( styleElement );
+                CURRENT_ELEMENT.setAndSpeak(newElement)
+                newElement.removeAttribute('current')
             }
         }
         // Pauses and unpauses the reader
@@ -255,15 +265,6 @@ const formHandler = (currentElement) => {
     voiceOver(textToSpeak)
 }
 
-// // TODO temporarily the same as the text handler
-// const buttonHandler = (currentElement) => {
-//     let textToSpeak = currentElement.getAttribute("href")
-//     voiceOver(textToSpeak)
-// }
-
-
-
-
 // maps element category names to handler functions
 const HANDLERS = {
     "metadata" : metadataHandler,
@@ -337,4 +338,3 @@ const ROLES = {
     "SELECT" : "form",
     "TEXTAREA" : "form",
 }
-
