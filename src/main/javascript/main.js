@@ -1,7 +1,7 @@
 //Global Variables
 let ALL_ELEMENTS = [] // Contains all the elements
 let PAGE_MAP = {} // A mapping of elements to i
-
+let utterThis = new SpeechSynthesisUtterance("Welcome to the Screen Reader")
 let CURRENT_ELEMENT = {
     // a function that updates this.value to newElement and reads the element
     setAndSpeak: (newElement) => {
@@ -31,6 +31,8 @@ let CURRENT_ELEMENT = {
 window.onload = () => {
     // Maps page elements
     mapPage()
+    addVoiceSlowDownBtn()
+    addVoiceSpeedUpBtn()
     addBackwardBtn()
     addForwardBtn()
     addPlayPauseBtn()
@@ -101,9 +103,30 @@ const addBackwardBtn = () => {
         }
     )
 }
+const addVoiceSpeedUpBtn = () => {
+    let voiceSpeedUpBtn = document.createElement("button");
+    voiceSpeedUpBtn.innerHTML = "Read Faster";
+    document.body.insertBefore(voiceSpeedUpBtn,document.body.firstChild);
+    voiceSpeedUpBtn.addEventListener("click", event => {
+        utterThis.rate = utterThis.rate + 1
+        console.log(utterThis.rate)
+        }
+    )
+}
+
+const addVoiceSlowDownBtn = () => {
+    let voiceSlowDownBtn = document.createElement("button");
+    voiceSlowDownBtn.innerHTML = "Read Slower";
+    document.body.insertBefore(voiceSlowDownBtn,document.body.firstChild);
+    voiceSlowDownBtn.addEventListener("click", event => {
+            utterThis.rate = utterThis.rate - 1
+            console.log(utterThis.rate)
+        }
+    )
+}
 const voiceOver = (textToSpeak) => {
     let voices = window.speechSynthesis.getVoices()
-    let utterThis = new SpeechSynthesisUtterance(textToSpeak)
+    utterThis = new SpeechSynthesisUtterance(textToSpeak)
     window.speechSynthesis.speak(utterThis)
     return new Promise((resolve) => {
         window.setInterval(() => {
@@ -241,9 +264,6 @@ const formHandler = (currentElement) => {
     let textToSpeak = currentElement.innerText
     voiceOver(textToSpeak)
 }
-
-
-
 
 // maps element category names to handler functions
 const HANDLERS = {
