@@ -22,6 +22,15 @@ let CURRENT_ELEMENT = {
             if(typeof SPEECH_HANDLER === 'function') {
                 SPEECH_HANDLER(this.value)
             }
+            newElement.setAttribute('current')
+            const styleElement = document.createElement( 'style' );
+            styleElement.textContent = `[current] {
+                outline: 5px rgba( 0, 0, 0, .7 ) solid !important;
+            }
+            html[current] {
+                outline-offset: -5px;
+            }`;
+            document.head.appendChild( styleElement );
         }
     },
     value: null,
@@ -312,4 +321,3 @@ const ROLES = {
     "SELECT" : "form",
     "TEXTAREA" : "form",
 }
-
