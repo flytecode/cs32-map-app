@@ -22,15 +22,6 @@ let CURRENT_ELEMENT = {
             if(typeof SPEECH_HANDLER === 'function') {
                 SPEECH_HANDLER(this.value)
             }
-            newElement.setAttribute('current')
-            const styleElement = document.createElement( 'style' );
-            styleElement.textContent = `[current] {
-                outline: 5px rgba( 0, 0, 0, .7 ) solid !important;
-            }
-            html[current] {
-                outline-offset: -5px;
-            }`;
-            document.head.appendChild( styleElement );
         }
     },
     value: null,
@@ -52,7 +43,17 @@ window.onload = () => {
                 // Get current element using page map
                let newElement = document.getElementById(PAGE_MAP[i])
                 // Speak the current element according to the handler
-               CURRENT_ELEMENT.setAndSpeak(newElement)
+                newElement.setAttribute('current', 'current')
+                const styleElement = document.createElement( 'style' );
+                styleElement.textContent = `[current] {
+                    outline: 5px rgba( 0, 0, 0, .7 ) solid !important;
+                }
+                html[current] {
+                    outline-offset: -5px;
+                }`;
+                document.head.appendChild( styleElement );
+                CURRENT_ELEMENT.setAndSpeak(newElement)
+                newElement.removeAttribute('current')
             }
         }
         // Pauses and unpauses the reader
@@ -238,12 +239,6 @@ const multimediaHandler = async (currentElement) => {
 // TODO temporarily the same as the text handler
 const formHandler = (currentElement) => {
     let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
-}
-
-// TODO temporarily the same as the text handler
-const buttonHandler = (currentElement) => {
-    let textToSpeak = currentElement.getAttribute("href")
     voiceOver(textToSpeak)
 }
 
