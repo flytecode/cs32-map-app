@@ -38,14 +38,12 @@ window.onload = () => {
        //Starts the reader
         if (event.code === 'KeyP') {
             event.preventDefault();
-            console.log(ALL_ELEMENTS.length)
             // Cycle through every element
             for (let i = 0; i < ALL_ELEMENTS.length; i++) {
                 // Get current element using page map
-                console.log("I am going to move on")
-                let newElement = document.getElementById(PAGE_MAP[i])
+               let newElement = document.getElementById(PAGE_MAP[i])
                 // Speak the current element according to the handler
-                CURRENT_ELEMENT.setAndSpeak(newElement)
+               CURRENT_ELEMENT.setAndSpeak(newElement)
             }
         }
         // Pauses and unpauses the reader
@@ -164,10 +162,10 @@ const listHandler = (currentElement) => {
 }
 
 // TODO temporarily the same as the text handler
-const interactiveHandler = (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
-}
+// const interactiveHandler = (currentElement) => {
+//     let textToSpeak = currentElement.innerText
+//     voiceOver(textToSpeak)
+// }
 
 const linkHandler = async (currentElement) => {
 
@@ -181,17 +179,10 @@ const linkHandler = async (currentElement) => {
     console.log(window.speechSynthesis.paused)
     window.speechSynthesis.pause()
     console.log("hi")
-    currentElement.addEventListener('keyup', event => {
+    document.addEventListener('keyup', event => {
         if (event.code === 'KeyO') {
             event.preventDefault()
             window.open(link,"_blank")
-        }
-        if (event.code === 'KeyS'){
-            event.preventDefault()
-            window.speechSynthesis.pause()
-            if(window.speechSynthesis.paused){
-                window.speechSynthesis.resume()
-            }
         }
     })
 }
@@ -201,15 +192,26 @@ const buttonHandler = async (currentElement) => {
     voiceOver(textToSpeak)
     textToSpeak = "Would you like to press the button? Press B to press the button. Press S to resume voice over"
     voiceOver(textToSpeak)
-    currentElement.addEventListener('keyup', event => {
+    document.addEventListener('keyup', event => {
         if (event.code === 'KeyB') {
             currentElement.click()
+            console.log("you pressed the button!")
             }
     })
 }
 
 const inputHandler = async (currentElement) => {
     let textToSpeak = "this is an input box" + currentElement.innerText
+    voiceOver(textToSpeak)
+    textToSpeak = "click T to type in the box"
+    voiceOver(textToSpeak)
+    document.addEventListener('keyup', event => {
+        if (event.code === 'KeyT') {
+            currentElement.click()
+            console.log("you can now type in text box!")
+        }
+    })
+
 }
 
 // TODO temporarily the same as the text handler
