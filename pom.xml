@@ -6,11 +6,11 @@
   <!-- groupId is used to identify the organization -->
   <groupId>edu.brown.cs</groupId>
   <!-- artifactId is used to name the specific project -->
-  <artifactId>project-1</artifactId>
+  <artifactId>mapswithfriends</artifactId>
   <!-- type of file you want to output -->
   <packaging>jar</packaging>
   <!-- Version of your project -->
-  <version>1.0</version>
+  <version>3.0</version>
 
   <!-- Defines UTF-8 encoding -->
   <properties>
@@ -116,6 +116,17 @@
       <artifactId>sqlite-jdbc</artifactId>
       <version>3.30.1</version>
     </dependency>
+
+    <!--
+        Added dependency for JSONObjects
+    -->
+
+    <dependency>
+      <groupId>com.vaadin.external.google</groupId>
+      <artifactId>android-json</artifactId>
+      <version>0.0.20131108.vaadin1</version>
+    </dependency>
+
   </dependencies>
 
   <!-- Build section -->
