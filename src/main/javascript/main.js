@@ -37,25 +37,15 @@ window.onload = () => {
     addForwardBtn()
     addPlayPauseBtn()
     document.addEventListener('keyup', event => {
-       //Starts the reader
+        //Starts the reader
         if (event.code === 'KeyP') {
             event.preventDefault();
             // Cycle through every element
             for (let i = 0; i < ALL_ELEMENTS.length; i++) {
                 // Get current element using page map
-               let newElement = document.getElementById(PAGE_MAP[i])
+                let newElement = document.getElementById(PAGE_MAP[i])
                 // Speak the current element according to the handler
-                newElement.setAttribute('current', 'current')
-                const styleElement = document.createElement( 'style' );
-                styleElement.textContent = `[current] {
-                    outline: 5px rgba( 0, 0, 0, .7 ) solid !important;
-                }
-                html[current] {
-                    outline-offset: -5px;
-                }`;
-                document.head.appendChild( styleElement );
                 CURRENT_ELEMENT.setAndSpeak(newElement)
-                newElement.removeAttribute('current')
             }
         }
         // Pauses and unpauses the reader
@@ -88,8 +78,8 @@ const addForwardBtn = () => {
     forwardBtn.innerHTML = "Go Forward";
     document.body.insertBefore(forwardBtn, document.body.firstChild);
     forwardBtn.addEventListener("click", event => {
-        //add forward method code
-        console.log("I'm going forward!")
+            //add forward method code
+            console.log("I'm going forward!")
         }
     )
 }
@@ -108,8 +98,8 @@ const addVoiceSpeedUpBtn = () => {
     voiceSpeedUpBtn.innerHTML = "Read Faster";
     document.body.insertBefore(voiceSpeedUpBtn,document.body.firstChild);
     voiceSpeedUpBtn.addEventListener("click", event => {
-        utterThis.rate = utterThis.rate + 1
-        console.log(utterThis.rate)
+            utterThis.rate = utterThis.rate + 1
+            console.log(utterThis.rate)
         }
     )
 }
@@ -128,14 +118,16 @@ const voiceOver = (textToSpeak) => {
     let voices = window.speechSynthesis.getVoices()
     utterThis = new SpeechSynthesisUtterance(textToSpeak)
     window.speechSynthesis.speak(utterThis)
+    //
     return new Promise((resolve) => {
-        window.setInterval(() => {
-            if(!window.speechSynthesis.speaking){
-                resolve()
-            }
-        }
-        ,250
-        )
+        utterThis.onend = () => resolve()
+        // window.setInterval(() => {
+        //     if(!window.speechSynthesis.speaking){
+        //         resolve()
+        //     }
+        // }
+        // ,250
+        // )
     })
 }
 const mapPage = () => {
@@ -169,9 +161,9 @@ const sectionHandler = (currentElement) => {
 }
 
 // Handles tags that are in the text category
-const textHandler = (currentElement) => {
+const textHandler = async (currentElement) => {
     let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
+    await voiceOver(textToSpeak)
 }
 
 // Handles tags that are in the metadata category
@@ -203,11 +195,11 @@ const listHandler = (currentElement) => {
 const linkHandler = async (currentElement) => {
 
     let textToSpeak = "this is a link" + currentElement.innerText
-    voiceOver(textToSpeak)
+    await voiceOver(textToSpeak)
     let link = currentElement.href
     textToSpeak = "the link address is" + link
-    voiceOver(textToSpeak)
-    voiceOver("Would you like to open it in a new window? Press O to open link in new window. Press S to resume voice over")
+    await voiceOver(textToSpeak)
+    await voiceOver("Would you like to open it in a new window? Press O to open link in new window. Press S to resume voice over")
     console.log(window.speechSynthesis.speaking)
     console.log(window.speechSynthesis.paused)
     window.speechSynthesis.pause()
@@ -229,7 +221,7 @@ const buttonHandler = async (currentElement) => {
         if (event.code === 'KeyB') {
             currentElement.click()
             console.log("you pressed the button!")
-            }
+        }
     })
 }
 
@@ -264,6 +256,15 @@ const formHandler = (currentElement) => {
     let textToSpeak = currentElement.innerText
     voiceOver(textToSpeak)
 }
+
+// // TODO temporarily the same as the text handler
+// const buttonHandler = (currentElement) => {
+//     let textToSpeak = currentElement.getAttribute("href")
+//     voiceOver(textToSpeak)
+// }
+
+
+
 
 // maps element category names to handler functions
 const HANDLERS = {
@@ -338,3 +339,4 @@ const ROLES = {
     "SELECT" : "form",
     "TEXTAREA" : "form",
 }
+
