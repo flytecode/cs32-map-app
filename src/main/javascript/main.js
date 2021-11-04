@@ -1,66 +1,51 @@
-//Global Variables
-let ALL_ELEMENTS = [] // Contains all the elements
-let PAGE_MAP = {} // A mapping of elements to i
-let utterThis = new SpeechSynthesisUtterance("Welcome to the Screen Reader")
-let CURRENT_ELEMENT = {
-    // a function that updates this.value to newElement and reads the element
-    setAndSpeak: (newElement) => {
-        // Set element
-        this.value = newElement
-        console.log("this is new element" , newElement)
-        // Speak if the element isn't null
-        if(this.value !== null) {
-            // Get current tag name
-            let CURRENT_TAG = this.value.tagName
+// Contains all elements
+let ALL_ELEMENTS = []
 
-            console.log(CURRENT_TAG)
-            // Call the correct method for the given tag name
-            let CURRENT_CATEGORY = ROLES[CURRENT_TAG]
-            // Get the function to handle speech for the current tag
-            let SPEECH_HANDLER = HANDLERS[CURRENT_CATEGORY]
-            // This makes sure the speech handler is a function like we want
-            if(typeof SPEECH_HANDLER === 'function') {
-                SPEECH_HANDLER(this.value)
+// map element ids to index
+let PAGE_MAP = {}
+
+// shortcut to access speech synthesizer
+let VOICE_SYNTH = window.speechSynthesis
+
+// First Index
+let MIN_INDEX = 11
+
+// global for current index
+let CURRENT_INDEX = MIN_INDEX
+
+let SHOULD_READ = false
+
+
+let CURRENT_ELEMENT = {
+    setAndSpeak: async function (newElement) {
+        this.value = newElement
+        if (newElement.style.hidden !== true && newElement.style.visibility !== "none") {
+            this.value = newElement
+            unhighlightElement(newElement)
+            let handler = HANDLERS[ROLES[newElement.tagName.toLowerCase()]]
+            let speakString = handler(newElement)
+            if (speakString !== "") {
+                highlightElement(newElement)
+                let audio = new SpeechSynthesisUtterance(speakString)
+                VOICE_SYNTH.speak(audio)
+                return new Promise(resolve => {
+                    audio.onend = resolve
+                })
             }
         }
     },
-    value: null,
+    value: null
 }
 
-// Called when the window is loaded
-window.onload = () => {
-    // Maps page elements
-    mapPage()
+
+const injectHtml = () => {
     addVoiceSlowDownBtn()
     addVoiceSpeedUpBtn()
     addBackwardBtn()
     addForwardBtn()
     addPlayPauseBtn()
-    document.addEventListener('keyup', event => {
-        //Starts the reader
-        if (event.code === 'KeyP') {
-            event.preventDefault();
-            // Cycle through every element
-            for (let i = 0; i < ALL_ELEMENTS.length; i++) {
-                // Get current element using page map
-                let newElement = document.getElementById(PAGE_MAP[i])
-                // Speak the current element according to the handler
-                CURRENT_ELEMENT.setAndSpeak(newElement)
-            }
-        }
-        // Pauses and unpauses the reader
-        if (event.code === 'KeyS') {
-            event.preventDefault();
-            window.speechSynthesis.pause()
-            if(window.speechSynthesis.paused){
-                window.speechSynthesis.resume()
-            }
-        }
-
-        //TODO forwards and backwards
-    })
 }
-// TODO injectHTML()
+
 
 const addPlayPauseBtn = () => {
     let playPauseBtn = document.createElement("button");
@@ -114,229 +99,391 @@ const addVoiceSlowDownBtn = () => {
         }
     )
 }
-const voiceOver = (textToSpeak) => {
-    let voices = window.speechSynthesis.getVoices()
-    utterThis = new SpeechSynthesisUtterance(textToSpeak)
-    window.speechSynthesis.speak(utterThis)
-    //
-    return new Promise((resolve) => {
-        utterThis.onend = () => resolve()
-        // window.setInterval(() => {
-        //     if(!window.speechSynthesis.speaking){
-        //         resolve()
-        //     }
-        // }
-        // ,250
-        // )
-    })
+//highlighting elements
+function highlightElement(currentElement) {
+    currentElement.style['background-color'] = "#CCFFFF"
+    currentElement.style['color'] = "black"
+    currentElement.style['text-weight'] = "bold" // in case they are color blind
 }
-const mapPage = () => {
-    // Get the elements
-    if (ALL_ELEMENTS.length === 0){
-        ALL_ELEMENTS = document.body.getElementsByTagName("*")
+
+function unhighlightElement(currentElement) {
+    currentElement.style['background-color'] = ""
+    currentElement.style['text-weight'] = ""
+    currentElement.style['color'] = ""
+
+// Called when the window is first loaded
+    window.onload = () => {
+        // inject html elements before mapping out the page
+        injectHtml()
+
+        // map out the page to fill out PAGE_MAP array
+        mapPage()
+
+        let checkReading = async function () {
+            return SHOULD_READ
+        }
+
+        // Set the highlight color for the page
+        let select = document.getElementById("highlight-color");
+        select.onchange = () => {
+            HIGHLIGHT_COLOR = select.value
+        }
+
+        document.getElementById("start-reading").addEventListener("click", () => {
+            console.log("start")
+            // if (!SHOULD_READ) -- idea to handle multiple "read page" clicks (potentially return to later) -- messes up checkReading
+            SHOULD_READ = true
+            // restart reading page if at the end
+            if (CURRENT_INDEX === ALL_ELEMENTS.length - 1) {
+                CURRENT_INDEX = MIN_INDEX
+            }
+            let READING_LOOP = async function () {
+                console.log(ALL_ELEMENTS.length)
+                for (CURRENT_INDEX; CURRENT_INDEX < ALL_ELEMENTS.length; CURRENT_INDEX++) {
+                    if (await checkReading()) {
+                        console.log(CURRENT_INDEX)
+                        // in case we had just been stopped, unhighlight the previous thing
+                        unhighlightElement(CURRENT_ELEMENT.value)
+                        let newElement = ALL_ELEMENTS[CURRENT_INDEX]
+                        await CURRENT_ELEMENT.setAndSpeak(newElement)
+                    } else {
+                        highlightElement(CURRENT_ELEMENT.value)
+                        console.log("Reading stopped")
+                        break
+                    }
+                }
+            }
+            READING_LOOP()
+        })
+
+        // event listener for clicking the stop reading button
+        document.getElementById("stop-reading").addEventListener("click", () => {
+            console.log("stop")
+            VOICE_SYNTH.cancel();
+            SHOULD_READ = false
+        })
+
+        // event listeners for arrow key presses and interacting using space
+        window.addEventListener("keydown", async (event) => {
+            let newElement;
+            // potentially leave highlighting until restarting
+            switch (event.key) {
+                case "ArrowLeft" :
+                    // cancel the voice and prevent default
+                    event.preventDefault()
+                    VOICE_SYNTH.cancel();
+                    console.log("Going back")
+                    SHOULD_READ = false
+
+                    // in case we had just been stopped
+                    unhighlightElement(CURRENT_ELEMENT.value)
+
+                    // get the element before the one that's currently being read out
+                    CURRENT_INDEX = PAGE_MAP[CURRENT_ELEMENT.value.id] - 1
+                    console.log(CURRENT_INDEX)
+
+                    // make sure that the user can't get to our buttons
+                    if (CURRENT_INDEX < MIN_INDEX) {
+                        CURRENT_INDEX = MIN_INDEX;
+                    }
+
+                    // speak and then unhighlight this element
+                    newElement = ALL_ELEMENTS[CURRENT_INDEX]
+
+                    // skip over invisible elements
+                    while (ROLES[newElement.tagName.toLowerCase()] === "invisible") {
+                        CURRENT_INDEX -= 1
+
+                        if (CURRENT_INDEX < MIN_INDEX) {
+                            CURRENT_INDEX = MIN_INDEX
+                            newElement = ALL_ELEMENTS[CURRENT_INDEX]
+                            break;
+                        }
+                        newElement = ALL_ELEMENTS[CURRENT_INDEX]
+                    }
+
+                    await CURRENT_ELEMENT.setAndSpeak(newElement)
+                    // unhighlightElement(newElement)
+                    break;
+                case "ArrowRight" :
+                    // cancel the voice and prevent default
+                    event.preventDefault()
+                    VOICE_SYNTH.cancel()
+                    console.log("Going forward")
+                    SHOULD_READ = false
+
+                    // in case we had just been stopped
+                    unhighlightElement(CURRENT_ELEMENT.value)
+
+                    // get the element before the one that's currently being read out
+                    CURRENT_INDEX = PAGE_MAP[CURRENT_ELEMENT.value.id] + 1
+                    console.log(CURRENT_INDEX)
+
+                    // make sure user can't go past length of ALL_ELEMENTS
+                    if (CURRENT_INDEX >= ALL_ELEMENTS.length) {
+                        CURRENT_INDEX = ALL_ELEMENTS.length - 1
+                    }
+
+                    // speak and then unhighlight this element
+                    newElement = ALL_ELEMENTS[CURRENT_INDEX]
+
+                    while (ROLES[newElement.tagName.toLowerCase()] === "invisible") {
+                        CURRENT_INDEX += 1
+
+                        if (CURRENT_INDEX >= ALL_ELEMENTS.length) {
+                            CURRENT_INDEX = ALL_ELEMENTS.length - 1
+                            newElement = ALL_ELEMENTS[CURRENT_INDEX]
+                            break;
+                        }
+                    }
+
+                    await CURRENT_ELEMENT.setAndSpeak(newElement)
+                    // unhighlightElement(newElement)
+                    break;
+                case "Enter" : {
+                    event.preventDefault()
+                    let e = CURRENT_ELEMENT.value
+                    if (e.tagName.toLowerCase() === "input") {
+                        e.focus()
+                    } else {
+                        // else, it will be a button or a link
+                        e.click()
+                    }
+                    break;
+                }
+                case " " : {
+                    event.preventDefault()
+                    if (SHOULD_READ === false) {
+                        document.getElementById("start-reading").click()
+                    } else {
+                        document.getElementById("stop-reading").click()
+                    }
+                }
+            }
+        })
     }
-    // Assign every element an id
-    for (let i = 0; i < ALL_ELEMENTS.length; i++) {
-        const currentElement = ALL_ELEMENTS[i]
-        if (!currentElement.id){
-            currentElement.id = i
+
+    const mapPage = () => {
+        if (ALL_ELEMENTS.length === 0) {
+            ALL_ELEMENTS = document.body.getElementsByTagName("*")
         }
-        PAGE_MAP[currentElement.id] = i
+
+        for (let i = 0; i < ALL_ELEMENTS.length; i++) {
+            const currentElement = ALL_ELEMENTS[i]
+            if (!currentElement.id) {
+                currentElement.id = i
+            }
+            PAGE_MAP[currentElement.id] = i
+        }
+
+        // initialize CURRENT_ELEMENT to be the first thing in the page
+        CURRENT_ELEMENT.value = ALL_ELEMENTS[MIN_INDEX]
+
     }
-}
+
+    const injectHtml = () => {
+        //document.body.innerHTML += `<div id="sr" style="position: sticky; top: 0px; right: 0px;"> Screenreader </div>`
+        const sr = document.createElement("div")
+        sr.style.float = 'right'
+        sr.id = 'sr'
+        sr.style.position = "sticky"
+        sr.style.top = '0'
+        sr.style.right = '0'
+        sr.style.zIndex = '999'
+        // Add buttons to start/stop reading
+        sr.innerHTML = `<button id="start-reading" style="margin-bottom:4px; margin-top:4px">Start Reading</button>`
+        sr.innerHTML += `\n<button id="stop-reading">Stop Reading</button>`
+        // Add drop-down to select highlight color
+        sr.innerHTML += `<br>Highlight Color: <select name="highlight-color" id="highlight-color">
+        <option value="#fff280">Yellow</option>
+        <option value="#ffd29e">Orange</option>
+        <option value="#c8ff70">Green</option>
+        <option value="#9efff9">Cyan</option>
+        <option value="#e6c7ff">Purple</option>
+        <option value="">None</option>
+    </select>`
+        document.body.insertBefore(sr, document.body.firstChild)
+    }
 
 
+// maps element categories to reading handlers (return strings)
+// TODO: Read out title??
+// TODO dealing with color?
+    let HANDLERS;
+    HANDLERS = {
+        "text-only": function textOnlyHandler(element) {
+            console.log("text-only")
+            console.log(element)
+            console.log(element.innerHTML)
+            return element.innerHTML;
+        },
+        "text-with-tag": function textWithTagHandler(element) {
+            if (element === "aside") {
+                return "Now reading an " + element.tagName + " . " + element.innerHTML;
+            } else {
+                return "Now reading a " + element.tagName + " . " + element.innerHTML;
+            }
+        },
+        "invisible": function invisibleHandler(element) {
+            return "";
+        },
+        "link": function linkHandler(element) {
+            console.log("link handled")
+            console.log(element.href)
+            document.getElementById("stop-reading").click()
+            if (element.innerHTML !== element.href) {
+                //TODO just reading part of the link out
+                return "Link: " + element.innerHTML + " This link goes to: " + element.href + " Press enter to click" +
+                    " the link, or press space to continue reading.";
+            } else {
+                return "Link to: " + element.href + " Press enter to click the link, or press space to continue reading.";
+            }
 
-// Handles tags that are in the metadata category
-// TODO temporarily the same as the text handler
-const metadataHandler = (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
-}
-
-// Handles tags that are in the section category
-const sectionHandler = (currentElement) => {
-    let textToSpeak = "You are in the " + currentElement.tagName + "section"
-    voiceOver(textToSpeak)
-}
-
-// Handles tags that are in the text category
-const textHandler = async (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    await voiceOver(textToSpeak)
-}
-
-// Handles tags that are in the metadata category
-// TODO temporarily the same as the text handler
-const groupsHandler = (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
-}
-
-// Handles tags that are in the metadata category
-// TODO temporarily the same as the text handler
-const figuresHandler = (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
-}
-
-// TODO temporarily the same as the text handler
-const listHandler = (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
-}
-
-// TODO temporarily the same as the text handler
-// const interactiveHandler = (currentElement) => {
-//     let textToSpeak = currentElement.innerText
-//     voiceOver(textToSpeak)
-// }
-
-const linkHandler = async (currentElement) => {
-
-    let textToSpeak = "this is a link" + currentElement.innerText
-    await voiceOver(textToSpeak)
-    let link = currentElement.href
-    textToSpeak = "the link address is" + link
-    await voiceOver(textToSpeak)
-    await voiceOver("Would you like to open it in a new window? Press O to open link in new window. Press S to resume voice over")
-    console.log(window.speechSynthesis.speaking)
-    console.log(window.speechSynthesis.paused)
-    window.speechSynthesis.pause()
-    console.log("hi")
-    document.addEventListener('keyup', event => {
-        if (event.code === 'KeyO') {
-            event.preventDefault()
-            window.open(link,"_blank")
+        },
+        "button": function buttonHandler(element) {
+            document.getElementById("stop-reading").click()
+            return "This is a button that says " + element.innerHTML + " Press enter to click the button," +
+                " or press space to continue reading.";
+        },
+        "nav": function navHandler(element) {
+            return "This is a navigation pane.";
+        },
+        "caption": function captionHandler(element) {
+            return "Caption: " + element.innerHTML;
+        },
+        "image": function imageHandler(element) {
+            if (element.alt) {
+                return "There is an image here displaying a " + element.alt;
+            } else {
+                return "There is an image here.";
+            }
+        },
+        // TODO enumerate different types (e.g. color, datetime-local)/enrich?
+        "input": function inputHandler(element) {
+            document.getElementById("stop-reading").click()
+            return "There is an interactive " + element.type + " element here." + " Press enter to type in " +
+                " the text box, or press space to continue reading.";
+        },
+        "canvas": function canvasHandler(element) {
+            if (!(element.innerHTML.trim === "")) {
+                return "There is a graphic here displaying: " + element.innerHTML;
+            } else {
+                return "There is a graphic here."
+            }
+        },
+        // sometimes <p> then <ul> => doesn't make sense
+        "unordered-list": function unorderedListHandler(element) {
+            return "This is a list.";
+        },
+        "ordered-list": function orderedListHandler(element) {
+            return "This is an ordered list.";
+        },
+        // TODO handle properly -- connect to associated element
+        "label": function labelHandler(element) {
+            return "There is a label here. It says " + element.innerHTML;
+        },
+        "table": function tableHandler(element) {
+            return "There is a table here." + element.innerHTML;
+        },
+        "th": function tableHeaderHandler(element) {
+            if (element.scope) {
+                if (element.scope === "col") {
+                    return "This is a column header. It says " + element.innerHTML;
+                } else {
+                    return "This is a " + element.scope + " header. It says " + element.innerHTML;
+                }
+            } else {
+                return "This is a header. It says " + element.innerHTML;
+            }
+        },
+        "td": function tableDataHandler(element) {
+            return "The data in this cell says " + element.innerHTML;
+        },
+        "tfoot": function tableFooterHandler(element) {
+            return "This is a table footer. It contains " + element.innerHTML; // fix me
+        },
+        "audio": function audioHandler(element) {
+            return "There is an audio file." // + element.src;
+        },
+        "fieldset": function fieldSetHandler(element) {
+            return "There is a grouping of elements here." // TODO handle legend, etc.?
+        },
+        "form": function formHandler(element) {
+            return "There is a field to submit information." // TODO clean up
+        },
+        "select": function selectHandler(element) {
+            return "There is a dropdown menu.";
+        },
+        "progress": function progressBarHandler(element) {
+            if (element.max && element.value) {
+                return "There is a graphic here displaying progress of "
+                    + element.value + " out of " + element.max;
+            } else if (element.value) {
+                return "There is a graphic here displaying progress of "
+                    + element.value + " out of 1.";
+            } else {
+                return "There is a progress bar here."; // TODO clean up
+            }
+        },
+        "text-area": function textAreaHandler(element) {
+            return "There is a field here to enter text."; // TODO make interactive
         }
-    })
-}
-
-const buttonHandler = async (currentElement) => {
-    let textToSpeak = "this is a button" + currentElement.innerText
-    voiceOver(textToSpeak)
-    textToSpeak = "Would you like to press the button? Press B to press the button. Press S to resume voice over"
-    voiceOver(textToSpeak)
-    document.addEventListener('keyup', event => {
-        if (event.code === 'KeyB') {
-            currentElement.click()
-            console.log("you pressed the button!")
-        }
-    })
-}
-
-const inputHandler = async (currentElement) => {
-    let textToSpeak = "this is an input box" + currentElement.innerText
-    voiceOver(textToSpeak)
-    textToSpeak = "click T to type in the box"
-    voiceOver(textToSpeak)
-    document.addEventListener('keyup', event => {
-        if (event.code === 'KeyT') {
-            currentElement.click()
-            console.log("you can now type in text box!")
-        }
-    })
-
-}
-
-// TODO temporarily the same as the text handler
-const tableHandler = async (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
-}
-
-// TODO temporarily the same as the text handler
-const multimediaHandler = async (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    await voiceOver(textToSpeak)
-}
-
-// TODO temporarily the same as the text handler
-const formHandler = (currentElement) => {
-    let textToSpeak = currentElement.innerText
-    voiceOver(textToSpeak)
-}
-
-// // TODO temporarily the same as the text handler
-// const buttonHandler = (currentElement) => {
-//     let textToSpeak = currentElement.getAttribute("href")
-//     voiceOver(textToSpeak)
-// }
 
 
-
-
-// maps element category names to handler functions
-const HANDLERS = {
-    "metadata" : metadataHandler,
-    "section" : sectionHandler,
-    "text" : textHandler,
-    "groups" : groupsHandler,
-    "figures" : figuresHandler,
-    "list" : listHandler,
-    "link":linkHandler,
-    "button": buttonHandler,
-    "input":inputHandler,
-    "table" : tableHandler,
-    "multimedia" : multimediaHandler,
-    "form" : formHandler,
-    "button" : buttonHandler,
-}
-
+    };
 // maps element tag names to element categories
-// element tag -> category
-const ROLES = {
-    "TITLE" : "metadata",
+    const ROLES = {
+        "div": "text-only",
+        "p": "text-only",
+        "li": "text-only",
+        "option": "text-only",
+        "h1": "text-only",
+        "h2": "text-only",
+        "h3": "text-only",
+        "h4": "text-only",
+        "h5": "text-only",
+        "h6": "text-only",
 
-    "HEADER" : "section",
-    "ASIDE" : "section",
-    "ARTICLE" : "section",
-    "FOOTER" : "section",
-    "MAIN" : "section",
-    "NAV" : "section",
-    "SECTION" : "section",
-    "LI" : "section",
+        "aside": "text-with-tag",
+        "header": "text-with-tag",
+        "footer": "text-with-tag",
+        "blockquote": "text-with-tag",
 
+        "script": "invisible",
+        "article": "invisible",
+        "main": "invisible",
+        "section": "invisible",
+        "cite": "invisible",
+        "figure": "invisible",
+        "time": "invisible",
 
-    "P" : "text",
-    "H1" : "text",
-    "H2" : "text",
-    "H3" : "text",
-    "H4" : "text",
-    "H5" : "text",
-    "H6" : "text",
+        "figcaption": "caption",
+        "caption": "caption",
 
-    "BLOCKQUOTE" : "groups",
-    "FIGCAPTION" : "groups",
-    "CITE" : "groups",
-    "CAPTION" : "groups",
+        "canvas": "canvas",
+        "svg": "canvas",
 
-    "FIGURE" : "figures",
-    "IMG" : "figures",
-    "CANVAS" : "figures",
-    "SVG" : "figures",
+        "ul": "unordered-list",
+        "ol": "ordered-list", // want to add more information here?
 
-    "UL" : "list",
-    "OL" : "list",
+        "img": "image",
+        "a": "link",
+        "nav": "nav",
+        "button": "button",
+        "input": "input",
+        "label": "label",
+        "audio": "audio",
 
-    "BUTTON" : "button",
-    "A" : "link",
-    "INPUT" : "input",
+        "table": "table",
+        "th": "th",
+        "td": "td",
+        "tfoot": "tfoot",
+        "tr": "invisible", // handle me?
 
-    "TABLE" : "table",
-    "TD" : "table",
-    "TFOOT" : "table",
-    "TH" : "table",
-    "TR" : "table",
-
-    "AUDIO" : "multimedia",
-
-    "FIELDSET" : "form",
-    "FORM" : "form",
-    "LABEL" : "form",
-    "OPTION" : "form",
-    "PROGRESS" : "form",
-    "SELECT" : "form",
-    "TEXTAREA" : "form",
+        "fieldset": "fieldset",
+        "form": "form",
+        "select": "select",
+        "progress": "progress",
+        "textarea": "text-area"
+    }
 }
-
