@@ -7,6 +7,7 @@ import org.w3c.dom.Node;
 
 import java.io.FileNotFoundException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -14,7 +15,7 @@ import java.sql.SQLException;
 public class DBTest {
 
   @Test
-  public void understandingFunctionality() {
+  public void understandingFunctionality() throws SQLException {
     String path = "./data/maps/maps.sqlite3";
     try {
       DatabaseHandler.loadDB(path);
@@ -25,25 +26,15 @@ public class DBTest {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
-    try {
-      ResultSet results = DatabaseHandler.queryLoadedDB("SELECT * FROM node LIMIT 30");
-      while (results.next()) {
-        System.out.println("ID: " + results.getString("id"));
-        System.out.println("lat: " + results.getString("latitude"));
-        System.out.println("long: " + results.getString("longitude"));
-        Coordinate current = new
-
-
-        Double x = (lng + 180) * (mapWidth / 360);
-// convert from degrees to radians
-        var latRad = lat * Math.PI / 180;
-// get y value
-        var mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-        var y = (mapHeight / 2) - (mapWidth * mercN / (2 * Math.PI));
-      }
-
-    } catch (SQLException e) {
-      e.printStackTrace();
+    String statement = "SELECT DISTINCT way.id FROM way "
+        + "INNER JOIN (SELECT id FROM node WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN "
+        + "? AND ?) as boxNodes ON (way.start=boxNodes.id OR way.end = boxNodes.id) ORDER BY "
+        + "way.id ASC;";
+    ResultSet results = DatabaseHandler.queryLoadedDB(statement);
+    while (results.next()) {
+      System.out.println("ID: " + results.getString("id"));
+      System.out.println("lat: " + results.getString("latitude"));
+      System.out.println("long: " + results.getString("longitude"));
     }
   }
 }
