@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from 'react'
 import './App.css';
 import React, { Component } from "react";
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+
 
 export default class CurrentlyLoaded extends Component {
     /* this class displays the list containing all the piece cards */

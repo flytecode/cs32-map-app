@@ -1,13 +1,14 @@
-import React, { useRef, useEffect } from 'react'
 import './App.css';
 import React, { Component } from "react";
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 
 export default class CurrentlyLoaded extends Component {
     /* this class displays the list containing all the piece cards */
     render() {
         return (
             <div className="info_box">
+                <h3>Getting Routes</h3>
                 <Form>
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>Street 1</Form.Label>
@@ -33,10 +34,13 @@ export default class CurrentlyLoaded extends Component {
                     <Button variant="success" type="submit">
                         Manual Input
                     </Button>
+                    <div className="padding">
+                        <Button variant="primary" type="submit">
+                            Get Route
+                        </Button>
+                    </div>
                 </Form>
-                <Button variant="primary" type="submit">
-                    Get Route
-                </Button>
+
             </div>
         )
     }

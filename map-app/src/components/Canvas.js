@@ -7,7 +7,6 @@ function Canvas (props) {
 
     const canvasRef = useRef(null)
 
-
     // Way_ID, Type, idk, node1Id, node2ID
     let way1 = new Way(1, 'road', null, 1, 2)
     let way2 = new Way(2, 'road', null, 2, 3)
@@ -27,6 +26,69 @@ function Canvas (props) {
         4: coords4
     }
     let ways = [way1, way2, way3, way4]
+
+
+    /**
+     * returns ways
+     * @returns {Promise<unknown>}
+     */
+    async function requestWays() {
+        return new Promise( (resolve, reject) => {
+                // Address we are getting data from
+                fetch("http://localhost:4567/ways", {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Access-Control-Allow-Origin': '*',
+                    },
+                    // Data that we are inputting into the api. This allows us to get the ways for a specific area
+                    body: JSON.stringify( {
+                        //"northwest": [INIT_MAX_LAT, INIT_MIN_LON],
+                        //"southeast" : [INIT_MIN_LAT, INIT_MAX_LON],
+                    })
+                }).then(response => response.json())
+                    .then(response => {
+                        console.log("Response:", response)
+                        if("error" in response) {
+                            if (response.error === undefined) {
+                                alert("An error occurred")
+                            } else {
+                                console.log("ways:", response.ways)
+                                resolve( {"ways": response.ways} )
+                            }
+                        }
+                    })
+            }
+        )
+    }
+
+    /**
+     * returns nodes
+     * @returns {Promise<unknown>}
+     */
+    async function requestNodes() {
+        return new Promise( (resolve, reject) => {
+                fetch("http://localhost:4567/nodes", {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Access-Control-Allow-Origin': '*',
+                    },
+                }).then(response => response.json())
+                    .then(response => {
+                        console.log("Response:", response)
+                        if("error" in response) {
+                            if (response.error === undefined) {
+                                alert("An error occurred")
+                            } else {
+                                console.log("nodes:", response.nodes)
+                                resolve( {"nodes": response.nodes} )
+                            }
+                        }
+                    })
+            }
+        )
+    }
 
     const draw = ctx => {
         ctx.fillStyle = '#000000'
@@ -56,8 +118,8 @@ function Canvas (props) {
     useEffect(() => {
 
         const canvas = canvasRef.current
-        canvas.width = window.innerWidth - 300
-        canvas.height = window.innerHeight - 300
+        canvas.width = window.innerWidth - 500
+        canvas.height = window.innerHeight - 100
         const ctx = canvas.getContext('2d')
 
         //Our draw come here
