@@ -56,6 +56,8 @@ function Canvas (props) {
     useEffect(() => {
 
         const canvas = canvasRef.current
+        canvas.width = window.innerWidth - 300
+        canvas.height = window.innerHeight - 300
         const ctx = canvas.getContext('2d')
 
         //Our draw come here
