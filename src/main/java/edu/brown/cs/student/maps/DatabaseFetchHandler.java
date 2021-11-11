@@ -18,7 +18,7 @@ public class DatabaseFetchHandler {
   public List<Way> fetchWays(double latNW, double lonNW, double latSE, double lonSE)
       throws SQLException, FileNotFoundException, ClassNotFoundException {
     // Load DB
-    DatabaseHandler.loadDB("./data/maps/maps.sqlite3");
+    DatabaseHandler.loadDB("./data/maps/smallMaps.sqlite3");
 //    DatabaseHandler.loadDB(path);
 
     Double maxLat = latNW;
@@ -34,6 +34,7 @@ public class DatabaseFetchHandler {
     }
 
     // Create Query String
+    System.out.println("B");
     String fancyStmt = "SELECT way.*, sNode.latitude as startLat, sNode.longitude as startLon, "
         + "eNode.latitude as endLat, eNode.longitude as endLon FROM way "
         + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE +
@@ -46,6 +47,7 @@ public class DatabaseFetchHandler {
         ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1';";
     // Query Results
     ResultSet results = DatabaseHandler.queryLoadedDB(fancyStmt);
+    System.out.println("A");
     ArrayList<Way> ways = new ArrayList<>();
     // Add each Way to ways ArrayList
     while (results.next()) {

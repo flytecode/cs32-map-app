@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 public class DBTest {
 
-  @Test
   public void understandingFunctionality() throws SQLException {
     String path = "./data/maps/maps.sqlite3";
     try {

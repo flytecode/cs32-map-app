@@ -45,14 +45,12 @@ function Canvas (props) {
         return (longitude - INIT_MIN_LON) * (700 / MapWidth)
     }
 
-
-
-
     /**
      * returns ways
      * @returns {Promise<unknown>}
      */
     async function requestWays() {
+        console.log(JSON.stringify([INIT_MAX_LAT, INIT_MIN_LON, INIT_MIN_LAT, INIT_MAX_LON]))
         return new Promise( (resolve, reject) => {
                 // Address we are getting data from
                 fetch("http://localhost:4567/ways", {
@@ -62,27 +60,17 @@ function Canvas (props) {
                         'Access-Control-Allow-Origin': '*',
                     },
                     // Data that we are inputting into the api. This allows us to get the ways for a specific area
-                    body: JSON.stringify( {
-                        "northwest": [INIT_MAX_LAT, INIT_MIN_LON],
-                        "southeast" : [INIT_MIN_LAT, INIT_MAX_LON],
-                    })
+                    body: JSON.stringify([INIT_MAX_LAT, INIT_MIN_LON, INIT_MIN_LAT, INIT_MAX_LON])
                 }).then(response => response.json())
-                    .then(response => {
-                        console.log("Response:", response)
-                        if("error" in response) {
-                            if (response.error === undefined) {
-                                alert("An error occurred")
-                            } else {
-                                console.log("ways:", response.ways)
-                                resolve( {"ways": response.ways} )
-                            }
-                        }
-                    })
+                    .then((data) => console.log(data));
             }
         )
     }
 
     const draw = ctx => {
+        let ways = requestWays()
+        console.log(ways)
+
         ctx.fillStyle = '#000000'
         ctx.borderColor = 'black'
         ctx.beginPath()
@@ -112,6 +100,7 @@ function Canvas (props) {
         canvas.width = 600
         canvas.height = 700
         const ctx = canvas.getContext('2d')
+
 
         //Our draw come here
         draw(ctx)
