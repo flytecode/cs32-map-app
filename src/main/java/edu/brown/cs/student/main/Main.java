@@ -8,12 +8,17 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import edu.brown.cs.student.commandHandlers.pathfinding.MapCommandHandler;
 import edu.brown.cs.student.commandHandlers.pathfinding.NearestCommandHandler;
 import edu.brown.cs.student.commandHandlers.pathfinding.RouteCommandsHandler;
+import edu.brown.cs.student.maps.DatabaseFetchHandler;
+import edu.brown.cs.student.maps.Way;
 import edu.brown.cs.student.repl.Repl;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -120,8 +125,32 @@ public final class Main {
     // TODO: Setup Spark Routes
     // Example Spark Route where /route is the subpage and MapsGuiHandler is a class
     // containing the RouteHandler method
-    // Spark.post("/route", new MapsGuiHandler.RouteHandler());
+//     Spark.post("/route", new MapsGuiHandler.RouteHandler());
+    Spark.post("/map/load", ((request, response) -> {
+      response.type("application/json");
+      Gson gson = new Gson();
+      double[] coords = gson.fromJson(response.body(), double[].class);
+      DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
+      List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+      String waysJson = gson.toJson(ways);
+      return waysJson;
+    }));
+
+//    Gson gson = new Gson();
+//    double[] coords = {54.0, 42.0, 42.0, 55.0};
+//    fetch('https://jsonplaceholder.typicode.com/posts', {
+//        method: 'post',
+//        body: gson.toJson(coords)
+//	}),
+//        headers: {
+//          'Content-type': 'application/json; charset=UTF-8',
+//        },
+//    })
+//    .then((response) => response.json())
+//    .then((data) => console.log(data));
+
   }
+
 
   /**
    * Display an error page when an exception occurs in the server.
