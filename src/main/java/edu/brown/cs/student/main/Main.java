@@ -133,7 +133,7 @@ public final class Main {
       DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
       List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
       String waysJson = gson.toJson(ways);
-      return waysJson;
+      return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS, waysJson));
     }));
 
 //    Gson gson = new Gson();
