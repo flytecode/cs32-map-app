@@ -19,4 +19,17 @@ public class Way {
     this.name = name;
     this.type = type;
   }
+
+  @Override
+  public String toString() {
+    return "Way{" +
+        "id='" + id + '\'' +
+        ", startLat=" + startLat +
+        ", startLon=" + startLon +
+        ", endLat=" + endLat +
+        ", endLon=" + endLon +
+        ", name='" + name + '\'' +
+        ", type='" + type + '\'' +
+        '}';
+  }
 }
