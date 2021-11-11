@@ -13,10 +13,10 @@ function Canvas (props) {
     let way3 = new Way(3, 'road', null, 3, 4)
     let way4 = new Way(4, 'road', null, 4, 1)
 
-    let coords1 = new Coords(100, 100);
-    let coords2 = new Coords(200, 100);
-    let coords3 = new Coords(200, 200);
-    let coords4 = new Coords(100, 200);
+    let coords1 = new Coords(41.825432, -71.393321);
+    let coords2 = new Coords(41.82421, -71.401231);
+    let coords3 = new Coords(41.82734, -71.40321);
+    let coords4 = new Coords(41.825343, -71.40543);
 
 
     const nodeMap = {
@@ -25,7 +25,27 @@ function Canvas (props) {
         3: coords3,
         4: coords4
     }
-    let ways = [way1, way2, way3, way4]
+    let ways = [way1,way2, way3, way4]
+
+    let INIT_MAX_LAT = 41.828147
+    let INIT_MIN_LAT = 41.823142
+    let INIT_MAX_LON = -71.392231
+    let INIT_MIN_LON = -71.407971
+
+    let MapWidth = INIT_MAX_LON - INIT_MIN_LON // 0.01574 * 38119.44091 -> 600
+    let MapHeight = INIT_MAX_LAT - INIT_MIN_LAT // 0.005005 * 139860.1399 -> 700
+
+
+    let convertX = function(latitude) {
+        return (latitude - INIT_MIN_LAT) * (600 / MapHeight)
+    }
+
+    let convertY = function(longitude) {
+        console.log(longitude - INIT_MIN_LON, 700 / MapWidth)
+        return (longitude - INIT_MIN_LON) * (700 / MapWidth)
+    }
+
+
 
 
     /**
@@ -43,8 +63,8 @@ function Canvas (props) {
                     },
                     // Data that we are inputting into the api. This allows us to get the ways for a specific area
                     body: JSON.stringify( {
-                        //"northwest": [INIT_MAX_LAT, INIT_MIN_LON],
-                        //"southeast" : [INIT_MIN_LAT, INIT_MAX_LON],
+                        "northwest": [INIT_MAX_LAT, INIT_MIN_LON],
+                        "southeast" : [INIT_MIN_LAT, INIT_MAX_LON],
                     })
                 }).then(response => response.json())
                     .then(response => {
@@ -55,34 +75,6 @@ function Canvas (props) {
                             } else {
                                 console.log("ways:", response.ways)
                                 resolve( {"ways": response.ways} )
-                            }
-                        }
-                    })
-            }
-        )
-    }
-
-    /**
-     * returns nodes
-     * @returns {Promise<unknown>}
-     */
-    async function requestNodes() {
-        return new Promise( (resolve, reject) => {
-                fetch("http://localhost:4567/nodes", {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                        'Access-Control-Allow-Origin': '*',
-                    },
-                }).then(response => response.json())
-                    .then(response => {
-                        console.log("Response:", response)
-                        if("error" in response) {
-                            if (response.error === undefined) {
-                                alert("An error occurred")
-                            } else {
-                                console.log("nodes:", response.nodes)
-                                resolve( {"nodes": response.nodes} )
                             }
                         }
                     })
@@ -102,24 +94,23 @@ function Canvas (props) {
             let endNode = nodeMap[ways[i].node2ID]
 
             // Move the start of the line to the starting node
-            ctx.moveTo(startNode.x, startNode.y)
+            ctx.moveTo(convertX(startNode.x), convertY(startNode.y));
 
             // Draw a line to the end node
-            ctx.lineTo(endNode.x, endNode.y)
-            console.log(startNode, endNode)
-        }
-        
-        ctx.stroke() // finishes path
-        ctx.closePath() // fills in object if the object is a building
-        //ctx.strokeRect(0, 0, ctx.width, ctx.height);
+            ctx.lineTo(convertX(endNode.x), convertY(endNode.y))
 
+            console.log(convertX(endNode.x), convertY(endNode.y), endNode, ways[i].node1ID)
+        }
+
+        ctx.stroke() // finishes path
+        ctx.closePath()
     }
 
     useEffect(() => {
 
         const canvas = canvasRef.current
-        canvas.width = window.innerWidth - 500
-        canvas.height = window.innerHeight - 100
+        canvas.width = 600
+        canvas.height = 700
         const ctx = canvas.getContext('2d')
 
         //Our draw come here
