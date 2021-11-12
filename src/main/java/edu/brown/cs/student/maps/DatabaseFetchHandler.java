@@ -15,35 +15,20 @@ import java.util.List;
 
 public class DatabaseFetchHandler {
 
-  public List<Way> fetchWays(double latNW, double lonNW, double latSE, double lonSE)
+  public List<Way> fetchWays(double maxLat, double minLat, double maxLon, double minLon)
       throws SQLException, FileNotFoundException, ClassNotFoundException {
     // Load DB
     DatabaseHandler.loadDB("./data/maps/maps.sqlite3");
-//    DatabaseHandler.loadDB(path);
-
-    Double maxLat = latNW;
-    Double minLat = latSE;
-    Double maxLon = lonSE;
-    Double minLon = lonNW;
-    if (latNW < latSE && lonNW > lonSE) {
-      // if reversed, then swap
-      maxLat = latSE;
-      minLat = latNW;
-      maxLon = lonNW;
-      minLon = lonSE;
+    if (maxLat <= minLat || maxLon <= minLon) {
+      throw new IllegalArgumentException("Coordinates are input incorrectly");
     }
-
     // Create Query String
     String fancyStmt = "SELECT way.*, sNode.latitude as startLat, sNode.longitude as startLon, "
         + "eNode.latitude as endLat, eNode.longitude as endLon FROM way "
-        + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE +
-        " AND "
-        + "longitude BETWEEN " + lonSE + " and " + lonNW +
-        ") as sNode ON way.start=sNode.id INNER JOIN "
-        + "(SELECT * FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE +
-        " AND longitude "
-        + "BETWEEN " + lonSE + " and " + lonNW +
-        ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1';";
+        + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND "
+        + "longitude BETWEEN " + minLon + " and " + maxLon + ") as sNode ON way.start=sNode.id INNER JOIN "
+        + "(SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND longitude "
+        + "BETWEEN " + minLon + " and " + maxLon + ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1';";
     // Query Results
     ResultSet results = DatabaseHandler.queryLoadedDB(fancyStmt);
     ArrayList<Way> ways = new ArrayList<>();

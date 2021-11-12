@@ -1,18 +1,16 @@
 package edu.brown.cs.student;
 
 import com.google.gson.Gson;
-import edu.brown.cs.student.commandHandlers.pathfinding.MapCommandHandler;
 import edu.brown.cs.student.database.DatabaseHandler;
+import edu.brown.cs.student.maps.DatabaseFetchHandler;
 import edu.brown.cs.student.maps.Way;
 import org.junit.Test;
-import org.w3c.dom.Node;
 
 import java.io.FileNotFoundException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class DBTest {
@@ -63,6 +61,19 @@ public class DBTest {
     Gson GSON = new Gson();
     String test = GSON.toJson(coords);
     System.out.println("test" + test);
+  }
+
+  @Test
+  public void testAPI() throws SQLException, FileNotFoundException, ClassNotFoundException {
+    Gson gson = new Gson();
+    double maxLat = 41.823142;
+    double minLat =
+    double[] coords = {41.828147, -72.407971, 41.823142, -71.392231};
+    DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
+    List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+    System.out.println(ways.size());
+    String waysJson = gson.toJson(ways);
+    System.out.println(waysJson);
   }
 }
 
