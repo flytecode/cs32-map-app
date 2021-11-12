@@ -1,5 +1,6 @@
 import com.google.gson.Gson;
 import edu.brown.cs.student.database.DatabaseHandler;
+import edu.brown.cs.student.maps.DatabaseFetchHandler;
 import edu.brown.cs.student.maps.Way;
 import org.junit.Test;
 
@@ -7,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class DBTest {
@@ -23,20 +25,20 @@ public class DBTest {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
-    double latNW = 41.0;
-    double latSE = 42.0;
-    double lonNW = -71.0;
-    double lonSE = -72.0;
-    String stmt = "SELECT * FROM way INNER JOIN "
-        + "(SELECT id FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE + " AND "
-        + " longitude BETWEEN " + lonSE + " AND " + lonNW + ") as boxNodes ON (way.start=boxNodes.id "
-        + "OR way.end = boxNodes.id) ORDER BY way.id ASC LIMIT 10;";
+    double latNW = 41.823142;
+    double latSE = 41.828147;
+    double lonNW = -71.392231;
+    double lonSE = -72.407971;
+//    String stmt = "SELECT * FROM way INNER JOIN "
+//        + "(SELECT id FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE + " AND "
+//        + " longitude BETWEEN " + lonSE + " AND " + lonNW + ") as boxNodes ON (way.start=boxNodes.id "
+//        + "OR way.end = boxNodes.id) ORDER BY way.id ASC LIMIT 10;";
     String fancyStmt = "SELECT way.*, sNode.latitude as startLat, sNode.longitude as startLon, "
         + "eNode.latitude as endLat, eNode.longitude as endLon FROM way "
         + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE + " AND "
         + "longitude BETWEEN " + lonSE + " and " + lonNW + ") as sNode ON way.start=sNode.id INNER JOIN "
         + "(SELECT * FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE + " AND longitude "
-        + "BETWEEN " + lonSE + " and " + lonNW + ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1' LIMIT 5;";
+        + "BETWEEN " + lonSE + " and " + lonNW + ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1';";
     ResultSet results = DatabaseHandler.queryLoadedDB(fancyStmt);
     ArrayList<Way> ways = new ArrayList<>();
     while (results.next()) {
@@ -57,6 +59,21 @@ public class DBTest {
     Gson GSON = new Gson();
     String test = GSON.toJson(coords);
     System.out.println("test" + test);
+  }
+
+  @Test
+  public void testAPI() throws SQLException, FileNotFoundException, ClassNotFoundException {
+    Gson gson = new Gson();
+    double maxLat = 41.828147;
+    double minLat = 41.823142;
+    double maxLon = -71.392231;
+    double minLon = -72.407971;
+    double[] coords = {maxLat, minLat, maxLon, minLon};
+    DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
+    List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+    System.out.println(ways.size());
+    String waysJson = gson.toJson(ways);
+    System.out.println(waysJson);
   }
 }
 
