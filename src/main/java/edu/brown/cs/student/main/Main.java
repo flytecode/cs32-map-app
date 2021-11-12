@@ -126,14 +126,24 @@ public final class Main {
     // Example Spark Route where /route is the subpage and MapsGuiHandler is a class
     // containing the RouteHandler method
 //     Spark.post("/route", new MapsGuiHandler.RouteHandler());
-    Spark.post("/map/load", ((request, response) -> {
+    Spark.post("/ways", ((request, response) -> {
       response.type("application/json");
       Gson gson = new Gson();
-      double[] coords = gson.fromJson(response.body(), double[].class);
+      double[] coords = gson.fromJson(request.body(), double[].class);
+      System.out.println(coords[0]);
+      System.out.println(coords[1]);
+      System.out.println(coords[2]);
+      System.out.println(coords[3]);
+      System.out.println("Test1");
       DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
-      List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+      System.out.println("Test2");
+      List<Way> ways = dbFetch.fetchWays(41.828147, -71.407971, 41.828147, -71.392231);
+      //List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+      System.out.println("Test3");
       String waysJson = gson.toJson(ways);
-      return waysJson;
+      System.out.println("Test4");
+      System.out.println(waysJson);
+      return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS, waysJson));
     }));
 
 //    Gson gson = new Gson();

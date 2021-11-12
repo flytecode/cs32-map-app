@@ -22,7 +22,9 @@ public class DatabaseFetchHandler {
     if (maxLat <= minLat || maxLon <= minLon) {
       throw new IllegalArgumentException("Coordinates are input incorrectly");
     }
+    DatabaseHandler.loadDB("./data/maps/smallMaps.sqlite3");
     // Create Query String
+    System.out.println("B");
     String fancyStmt = "SELECT way.*, sNode.latitude as startLat, sNode.longitude as startLon, "
         + "eNode.latitude as endLat, eNode.longitude as endLon FROM way "
         + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND "
@@ -31,6 +33,7 @@ public class DatabaseFetchHandler {
         + "BETWEEN " + minLon + " and " + maxLon + ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1';";
     // Query Results
     ResultSet results = DatabaseHandler.queryLoadedDB(fancyStmt);
+    System.out.println("A");
     ArrayList<Way> ways = new ArrayList<>();
     // Add each Way to ways ArrayList
     while (results.next()) {

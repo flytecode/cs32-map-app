@@ -1,5 +1,3 @@
-package edu.brown.cs.student;
-
 import com.google.gson.Gson;
 import edu.brown.cs.student.database.DatabaseHandler;
 import edu.brown.cs.student.maps.DatabaseFetchHandler;
