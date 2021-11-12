@@ -1,15 +1,9 @@
-package edu.brown.cs.student;
-
 import com.google.gson.Gson;
-import edu.brown.cs.student.commandHandlers.pathfinding.MapCommandHandler;
 import edu.brown.cs.student.database.DatabaseHandler;
 import edu.brown.cs.student.maps.Way;
 import org.junit.Test;
-import org.w3c.dom.Node;
 
 import java.io.FileNotFoundException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,6 +11,7 @@ import java.util.ArrayList;
 
 public class DBTest {
 
+  @Test
   public void understandingFunctionality() throws SQLException {
     String path = "./data/maps/maps.sqlite3";
     try {
