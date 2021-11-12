@@ -66,9 +66,11 @@ public class DBTest {
   @Test
   public void testAPI() throws SQLException, FileNotFoundException, ClassNotFoundException {
     Gson gson = new Gson();
-    double maxLat = 41.823142;
-    double minLat =
-    double[] coords = {41.828147, -72.407971, 41.823142, -71.392231};
+    double maxLat = 41.828147;
+    double minLat = 41.823142;
+    double maxLon = -71.392231;
+    double minLon = -72.407971;
+    double[] coords = {maxLat, minLat, maxLon, minLon};
     DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
     List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
     System.out.println(ways.size());
