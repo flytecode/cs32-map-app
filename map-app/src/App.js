@@ -11,6 +11,7 @@ function App() {
   return (
       <div className = 'App'>
           <div className="flex_row">
+
               <div className="flex_column">
                   < CurrentlyLoaded />
                   < GettingRoute />
@@ -21,6 +22,7 @@ function App() {
               <div>
                   <Routes/>
               </div>
+
           </div>
           <div className="padding">
               <Button variant="primary" size = "lg" type="submit">
