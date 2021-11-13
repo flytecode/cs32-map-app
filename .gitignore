@@ -4,5 +4,6 @@ target/
 .project
 .idea/
 data/
+map-app/node_modules/
 **.DS_Store**
 *.prefs

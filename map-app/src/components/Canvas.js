@@ -50,7 +50,7 @@ function Canvas (props) {
      * @returns {Promise<unknown>}
      */
     async function requestWays() {
-        console.log(JSON.stringify([INIT_MAX_LAT, INIT_MIN_LON, INIT_MIN_LAT, INIT_MAX_LON]))
+        console.log(JSON.stringify([INIT_MAX_LAT, INIT_MIN_LAT, INIT_MAX_LON, INIT_MIN_LON]))
         return new Promise( (resolve, reject) => {
                 // Address we are getting data from
                 fetch("http://localhost:4567/ways", {

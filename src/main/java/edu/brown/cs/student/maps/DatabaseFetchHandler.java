@@ -14,17 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseFetchHandler {
+  public DatabaseFetchHandler() {
+  }
 
   public List<Way> fetchWays(double maxLat, double minLat, double maxLon, double minLon)
       throws SQLException, FileNotFoundException, ClassNotFoundException {
     // Load DB
-    DatabaseHandler.loadDB("./data/maps/maps.sqlite3");
     if (maxLat <= minLat || maxLon <= minLon) {
       throw new IllegalArgumentException("Coordinates are input incorrectly");
     }
-    DatabaseHandler.loadDB("./data/maps/smallMaps.sqlite3");
+    DatabaseHandler.loadDB("./data/maps/maps.sqlite3");
+    System.out.println("DB " + DatabaseHandler.getConn());
     // Create Query String
-//    String simpleStmt = "SELECT * FROM node WHERE latitude BETWEEN 41.823142 AND 41.828147 AND longitude BETWEEN -72.407971 and -71.392231";
     String fancyStmt = "SELECT way.*, sNode.latitude as startLat, sNode.longitude as startLon, "
         + "eNode.latitude as endLat, eNode.longitude as endLon FROM way "
         + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND "

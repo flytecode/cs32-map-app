@@ -25,20 +25,16 @@ public class DBTest {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
-    double latNW = 41.823142;
-    double latSE = 41.828147;
-    double lonNW = -71.392231;
-    double lonSE = -72.407971;
-//    String stmt = "SELECT * FROM way INNER JOIN "
-//        + "(SELECT id FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE + " AND "
-//        + " longitude BETWEEN " + lonSE + " AND " + lonNW + ") as boxNodes ON (way.start=boxNodes.id "
-//        + "OR way.end = boxNodes.id) ORDER BY way.id ASC LIMIT 10;";
+    double maxLat = 41.828147;
+    double minLat = 41.823142;
+    double maxLon = -71.392231;
+    double minLon = -72.407971;
     String fancyStmt = "SELECT way.*, sNode.latitude as startLat, sNode.longitude as startLon, "
         + "eNode.latitude as endLat, eNode.longitude as endLon FROM way "
-        + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE + " AND "
-        + "longitude BETWEEN " + lonSE + " and " + lonNW + ") as sNode ON way.start=sNode.id INNER JOIN "
-        + "(SELECT * FROM node WHERE latitude BETWEEN " + latNW + " AND " + latSE + " AND longitude "
-        + "BETWEEN " + lonSE + " and " + lonNW + ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1';";
+        + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND "
+        + "longitude BETWEEN " + minLon + " and " + maxLon + ") as sNode ON way.start=sNode.id INNER JOIN "
+        + "(SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND longitude "
+        + "BETWEEN " + minLon + " and " + maxLon + ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1';";
     ResultSet results = DatabaseHandler.queryLoadedDB(fancyStmt);
     ArrayList<Way> ways = new ArrayList<>();
     while (results.next()) {
@@ -69,8 +65,8 @@ public class DBTest {
     double maxLon = -71.392231;
     double minLon = -72.407971;
     double[] coords = {maxLat, minLat, maxLon, minLon};
-    DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
 //    List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+    DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
     List<Way> ways = dbFetch.fetchWays(maxLat, minLat, maxLon, minLon);
     System.out.println(ways.size());
     String waysJson = gson.toJson(ways);

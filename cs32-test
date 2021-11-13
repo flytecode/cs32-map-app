@@ -36,7 +36,7 @@ class TestFormatError(Exception):
     self.message = message
 
 
-class Test:
+class TesterFile:
   """An individual test case."""
   def __init__(self, executable, filepath, ignore_whitespace=False):
     if not os.path.isfile(executable):
@@ -46,7 +46,7 @@ class Test:
     self.executable = executable
 
     if not os.path.isfile(filepath):
-      print('Test ', filepath, 'does not exist.')
+      print('TesterFile ', filepath, 'does not exist.')
       sys.exit(1)
 
     self.filename = os.path.basename(filepath)
@@ -130,8 +130,8 @@ class Test:
 
   @staticmethod
   def acceptable(expected, actual):
-    expected = Test.collapse_errors(expected)
-    actual = Test.collapse_errors(actual)
+    expected = TesterFile.collapse_errors(expected)
+    actual = TesterFile.collapse_errors(actual)
     if len(expected) != len(actual):
       return False
     for expected_line, actual_line in zip(expected, actual):
@@ -169,7 +169,7 @@ class Test:
           if not line.startswith(IGNORE_PREFIX):
             actual.append(line.rstrip('\n') if not ignore_whitespace else line.rstrip())
 
-    passed = Test.acceptable(self.expected, actual)
+    passed = TesterFile.acceptable(self.expected, actual)
     if not passed:
       # Only diff if the test failed (diff'ing will almost always point out ERROR tags)
       for line in differ.compare(self.expected, actual):
@@ -202,7 +202,7 @@ if __name__ == '__main__':
     sys.exit(1)
 
   executable = opts.executable
-  tests = [Test(executable, arg, opts.ignore_whitespace) for arg in args]
+  tests = [TesterFile(executable, arg, opts.ignore_whitespace) for arg in args]
 
   passed = 0
   for test in tests:

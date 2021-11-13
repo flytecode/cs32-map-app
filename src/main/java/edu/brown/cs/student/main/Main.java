@@ -130,20 +130,16 @@ public final class Main {
       response.type("application/json");
       Gson gson = new Gson();
       double[] coords = gson.fromJson(request.body(), double[].class);
-      System.out.println(coords[0]);
-      System.out.println(coords[1]);
-      System.out.println(coords[2]);
-      System.out.println(coords[3]);
-      System.out.println("Test1");
       DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
-      System.out.println("Test2");
-      List<Way> ways = dbFetch.fetchWays(41.828147, -71.407971, 41.828147, -71.392231);
+      double maxLat = 41.828147;
+      double minLat = 41.823142;
+      double maxLon = -71.392231;
+      double minLon = -72.407971;
+      List<Way> ways = dbFetch.fetchWays(maxLat, minLat, maxLon, minLon);
       //List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
-      System.out.println("Test3");
       String waysJson = gson.toJson(ways);
-      System.out.println("Test4");
       System.out.println(waysJson);
-      return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS, waysJson));
+      return waysJson;
     }));
 
 //    Gson gson = new Gson();
