@@ -5,6 +5,7 @@ import Way from './objects/Way'
 
 function Canvas (props) {
 
+    const canvasWays = useRef(null)
     const canvasRef = useRef(null)
 
     // Way_ID, Type, idk, node1Id, node2ID
@@ -41,7 +42,6 @@ function Canvas (props) {
     }
 
     let convertY = function(longitude) {
-        console.log(longitude - INIT_MIN_LON, 700 / MapWidth)
         return (longitude - INIT_MIN_LON) * (700 / MapWidth)
     }
 
@@ -62,39 +62,56 @@ function Canvas (props) {
                     // Data that we are inputting into the api. This allows us to get the ways for a specific area
                     body: JSON.stringify([INIT_MAX_LAT, INIT_MIN_LON, INIT_MIN_LAT, INIT_MAX_LON])
                 }).then(response => response.json())
-                    .then((data) => console.log(data));
+                    .then(response => {
+                        //console.log("Response:", response)
+                        if('error' in response) {
+                            if (response.error === undefined) {
+                                alert("An error occurred")
+                            } else {
+                                alert(response.error)
+                            }
+                            reject()
+                        } else {
+                            //console.log("ways:", response[0])
+                            resolve( {
+                                "ways" : response
+                            })
+                        }
+                    })
             }
         )
     }
 
-    const draw = ctx => {
-        let ways = requestWays()
-        console.log(ways)
+    const draw = async ctx => {
+
+        await requestWays().then(ways => canvasWays.current = ways)
+        console.log(canvasWays.current.ways[0])
+        console.log(canvasWays.current.ways[0].startLon)
 
         ctx.fillStyle = '#000000'
         ctx.borderColor = 'black'
         ctx.beginPath()
 
+        console.log("X: " + convertX(canvasWays.current.ways[0].startLat) + " Y: " + convertY(canvasWays.current.ways[0].startLon))
+
+
         // Cycle through all the lines and draw them
-        for(let i = 0; i < ways.length; i++) {
-            // Get starting variables
-            let startNode = nodeMap[ways[i].node1ID]
-            let endNode = nodeMap[ways[i].node2ID]
+        for(let i = 0; i < canvasWays.current.ways.length; i++) {
 
             // Move the start of the line to the starting node
-            ctx.moveTo(convertX(startNode.x), convertY(startNode.y));
+            ctx.moveTo(convertX(canvasWays.current.ways[i].startLat), convertY(canvasWays.current.ways[i].startLon));
 
             // Draw a line to the end node
-            ctx.lineTo(convertX(endNode.x), convertY(endNode.y))
+            ctx.lineTo(convertX(canvasWays.current.ways[i].endLat), convertY(canvasWays.current.ways[i].endLon))
 
-            console.log(convertX(endNode.x), convertY(endNode.y), endNode, ways[i].node1ID)
+            //console.log("X: " + convertX(canvasWays.current.ways[i].startLat) + " Y: " + convertY(canvasWays.current.ways[i].startLon))
         }
 
         ctx.stroke() // finishes path
         ctx.closePath()
     }
 
-    useEffect(() => {
+    useEffect( () => {
 
         const canvas = canvasRef.current
         canvas.width = 600

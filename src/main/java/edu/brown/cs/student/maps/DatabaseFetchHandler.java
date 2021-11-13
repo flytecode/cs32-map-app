@@ -39,8 +39,8 @@ public class DatabaseFetchHandler {
     while (results.next()) {
       Way currWay = new Way(results.getString("id"),
           results.getDouble("startLat"),
-          results.getDouble("startLon"),
           results.getDouble("endLat"),
+          results.getDouble("startLon"),
           results.getDouble("endLon"),
           results.getString("name"),
           results.getString("type"));
