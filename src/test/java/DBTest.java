@@ -70,7 +70,8 @@ public class DBTest {
     double minLon = -72.407971;
     double[] coords = {maxLat, minLat, maxLon, minLon};
     DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
-    List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+//    List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+    List<Way> ways = dbFetch.fetchWays(maxLat, minLat, maxLon, minLon);
     System.out.println(ways.size());
     String waysJson = gson.toJson(ways);
     System.out.println(waysJson);
