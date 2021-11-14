@@ -16,7 +16,7 @@ function App() {
                   < CurrentlyLoaded />
                   < GettingRoute />
               </div>
-              <div>
+              <div >
                   < Canvas className="canvas"/>
               </div>
               <div>

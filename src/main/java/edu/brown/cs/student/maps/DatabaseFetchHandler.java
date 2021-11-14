@@ -31,7 +31,7 @@ public class DatabaseFetchHandler {
         + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND "
         + "longitude BETWEEN " + minLon + " and " + maxLon + ") as sNode ON way.start=sNode.id INNER JOIN "
         + "(SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND longitude "
-        + "BETWEEN " + minLon + " and " + maxLon + ") as eNode ON way.end=eNode.id WHERE way.id LIKE '%1';";
+        + "BETWEEN " + minLon + " and " + maxLon + ") as eNode ON way.end=eNode.id WHERE way.id;";
     // Query Results
     ResultSet results = DatabaseHandler.queryLoadedDB(fancyStmt);
     ArrayList<Way> ways = new ArrayList<>();

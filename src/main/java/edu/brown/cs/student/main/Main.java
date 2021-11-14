@@ -131,14 +131,8 @@ public final class Main {
       Gson gson = new Gson();
       double[] coords = gson.fromJson(request.body(), double[].class);
       DatabaseFetchHandler dbFetch = new DatabaseFetchHandler();
-      double maxLat = 41.828147;
-      double minLat = 41.823142;
-      double maxLon = -71.392231;
-      double minLon = -72.407971;
-      List<Way> ways = dbFetch.fetchWays(maxLat, minLat, maxLon, minLon);
-      //List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
+      List<Way> ways = dbFetch.fetchWays(coords[0], coords[1], coords[2], coords[3]);
       String waysJson = gson.toJson(ways);
-      System.out.println(waysJson);
       return waysJson;
     }));
 
