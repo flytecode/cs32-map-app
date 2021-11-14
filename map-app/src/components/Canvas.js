@@ -30,6 +30,9 @@ function Canvas (props) {
     let INIT_MAX_LON = -71.392231
     let INIT_MIN_LON = -71.407971
 
+    let tileX = INIT_MAX_LON - INIT_MIN_LON // 0.01574 * 38119.44091 -> 600
+    let tileY = INIT_MAX_LAT - INIT_MIN_LAT // 0.005005 * 139860.1399 -> 700
+
     let convertY = function(latitude) {
         return (INIT_MAX_LAT - latitude) * (600 / tileY)
     }
@@ -38,8 +41,7 @@ function Canvas (props) {
     }
 
     // caching old version
-    // let tileX = INIT_MAX_LON - INIT_MIN_LON // 0.01574 * 38119.44091 -> 600
-    // let tileY = INIT_MAX_LAT - INIT_MIN_LAT // 0.005005 * 139860.1399 -> 700
+
     // let tileArray = new Array(203) // 203 is the number of tileX that fits in entire map data
     // for (let i = 0; i < 203; i++) {
     //     for (let j = 0; j < 388; j++) {

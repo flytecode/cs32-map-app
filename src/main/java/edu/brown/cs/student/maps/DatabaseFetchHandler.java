@@ -24,14 +24,14 @@ public class DatabaseFetchHandler {
       throw new IllegalArgumentException("Coordinates are input incorrectly");
     }
     DatabaseHandler.loadDB("./data/maps/maps.sqlite3");
-    System.out.println("DB " + DatabaseHandler.getConn());
+
     // Create Query String
     String fancyStmt = "SELECT way.*, sNode.latitude as startLat, sNode.longitude as startLon, "
         + "eNode.latitude as endLat, eNode.longitude as endLon FROM way "
         + "INNER JOIN (SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND "
         + "longitude BETWEEN " + minLon + " and " + maxLon + ") as sNode ON way.start=sNode.id INNER JOIN "
         + "(SELECT * FROM node WHERE latitude BETWEEN " + minLat + " AND " + maxLat + " AND longitude "
-        + "BETWEEN " + minLon + " and " + maxLon + ") as eNode ON way.end=eNode.id WHERE way.id;";
+        + "BETWEEN " + minLon + " and " + maxLon + ") as eNode ON way.end=eNode.id;";
     // Query Results
     ResultSet results = DatabaseHandler.queryLoadedDB(fancyStmt);
     ArrayList<Way> ways = new ArrayList<>();
@@ -46,6 +46,8 @@ public class DatabaseFetchHandler {
           results.getString("type"));
       ways.add(currWay);
     }
+    System.out.println(maxLon > minLon && maxLat > minLat);
+    System.out.println("ways size " + ways.size());
     return ways;
   }
 }
