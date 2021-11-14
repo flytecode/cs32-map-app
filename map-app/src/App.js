@@ -20,13 +20,10 @@ function App() {
               <div >
                   < Canvas className="canvas"/>
               </div>
-              <div>
+              <div className="flex_column">
                   <Routes/>
-              </div>
-              <div>
                   <Navigation/>
               </div>
-
           </div>
           <div className="padding">
               <Button variant="primary" size = "lg" type="submit">
