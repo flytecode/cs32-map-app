@@ -33,12 +33,12 @@ function Canvas (props) {
     let tileX = INIT_MAX_LON - INIT_MIN_LON // 0.01574 * 38119.44091 -> 600
     let tileY = INIT_MAX_LAT - INIT_MIN_LAT // 0.005005 * 139860.1399 -> 700
 
-    let convertY = function(latitude) {
-        return (INIT_MAX_LAT - latitude) * (600 / tileY)
-    }
-    let convertX = function(longitude) {
-        return (longitude - INIT_MIN_LON) * (600 / tileX)
-    }
+    const mapMinLat = 40.1581762
+    const mapMaxLat = 42.0952906
+    const mapMinLon = -73.7485663
+    const mapMaxLon = -70.5590942
+
+
 
     // caching old version
 
@@ -56,8 +56,14 @@ function Canvas (props) {
      * returns ways
      * @returns {Promise<unknown>}
      */
-    async function requestWays() {
-        // console.log(JSON.stringify([INIT_MAX_LAT, INIT_MIN_LAT, INIT_MAX_LON, INIT_MIN_LON]))
+    async function requestWays(tileXCoord, tileYCoord) {
+        const maxLat = mapMinLat + tileY * (tileYCoord + 1)
+        const minLat = mapMinLat + tileY * tileYCoord
+        const maxLon = mapMinLon + tileX * (tileXCoord + 1)
+        const minLon = mapMinLon + tileX * tileXCoord
+
+        console.log(maxLat, minLat, maxLon, minLon)
+
         return new Promise( (resolve, reject) => {
                 // Address we are getting data from
                 fetch("http://localhost:4567/ways", {
@@ -67,10 +73,10 @@ function Canvas (props) {
                         'Access-Control-Allow-Origin': '*',
                     },
                     // Data that we are inputting into the api. This allows us to get the ways for a specific area
-                    body: JSON.stringify([INIT_MAX_LAT, INIT_MIN_LAT, INIT_MAX_LON, INIT_MIN_LON])
+                    body: JSON.stringify([maxLat, minLat, maxLon, minLon])
                 }).then(response => response.json())
                     .then(response => {
-                        //console.log("Response:", response)
+                        console.log("Response:", response)
                         if('error' in response) {
                             if (response.error === undefined) {
                                 alert("An error occurred")
@@ -89,12 +95,19 @@ function Canvas (props) {
         )
     }
 
-    const draw = async ctx => {
+    async function draw(tileXCoord, tileYCoord, ctx) {
 
-        await requestWays().then(ways => canvasWays.current = ways)
+        await requestWays(tileXCoord, tileYCoord).then(ways => canvasWays.current = ways)
 
         let alreadyDrawn = [] //keeps track of street names we've already drawn
         // Cycle through all the lines and draw them
+
+        let convertY = function(latitude) {
+            return (mapMinLat + tileY * (tileYCoord + 1) - latitude) * (600 / tileY)
+        }
+        let convertX = function(longitude) {
+            return (longitude - (mapMinLon + tileX * tileXCoord)) * (600 / tileX)
+        }
 
         // Stroke road outline
         ctx.beginPath();
@@ -126,14 +139,6 @@ function Canvas (props) {
             if (type != null && type !== "") {
                 ctx.moveTo(x1, y1)
                 ctx.lineTo(x2, y2)
-                // if (!alreadyDrawn.includes(name)) {
-                //     ctx.font = "10px Arial"
-                //     ctx.translate(x1, y1)
-                //     ctx.rotate(angle)
-                //     ctx.textAlign = "center"
-                //     ctx.fillText(name, 0,0)
-                //     alreadyDrawn.push(name)
-                // }
             }
         }
         ctx.stroke() // finishes path
@@ -149,7 +154,7 @@ function Canvas (props) {
             let y1 = convertY(canvasWays.current.ways[i].startLat) //y coordinate for start node
             let x2 = convertX(canvasWays.current.ways[i].endLon) //x coordinate for end node
             let y2 = convertY(canvasWays.current.ways[i].endLat) //y coordinate for end node
-
+            console.log(x1, y1, x2, y2)
             // Instantiate name and type properties
             let name = canvasWays.current.ways[i].name
             let type = canvasWays.current.ways[i].type
@@ -234,7 +239,7 @@ function Canvas (props) {
                     ctx.translate(x1, y1)
                     ctx.rotate(angle)
                     ctx.textAlign = "center"
-                    ctx.fillText(name, 0,0)
+                    ctx.fillText(name, 0, 0)
                     alreadyDrawn.push(name)
                     ctx.restore()
                 }
@@ -252,7 +257,7 @@ function Canvas (props) {
 
 
         //Our draw come here
-        draw(ctx)
+        draw(148.7, 332.5, ctx)
         // cache.push(ctx.getImageData())
     }, [draw])
 
