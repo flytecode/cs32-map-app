@@ -86,13 +86,13 @@ function Canvas (props) {
 
         await requestWays().then(ways => canvasWays.current = ways)
         console.log(canvasWays.current.ways[0])
-        console.log(canvasWays.current.ways[0].startLon)
+        //console.log(canvasWays.current.ways[0].startLon)
 
         ctx.fillStyle = '#000000'
         ctx.borderColor = 'black'
         ctx.beginPath()
 
-        console.log("X: " + convertX(canvasWays.current.ways[0].startLat) + " Y: " + convertY(canvasWays.current.ways[0].startLon))
+        //console.log("X: " + convertX(canvasWays.current.ways[0].startLat) + " Y: " + convertY(canvasWays.current.ways[0].startLon))
 
 
         // Cycle through all the lines and draw them
@@ -121,6 +121,7 @@ function Canvas (props) {
 
         //Our draw come here
         draw(ctx)
+        ctx.rotate(-90 * Math.PI / 180);
     }, [draw])
 
     return <canvas ref={canvasRef} {...props}/>
