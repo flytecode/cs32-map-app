@@ -73,8 +73,9 @@ function Canvas (props) {
 
     async function draw(tileXCoordinate, tileYCoordinate, ctx) {
         console.log(tileXCoordinate, tileYCoordinate)
-        if (concat(tileXCoordinate, tileYCoordinate) in cache) {
+        if (concat(tileXCoordinate, tileYCoordinate) in cache) { // If cached
             // console.log("cached array: " + cache[concat(tileXCoordinate, tileYCoordinate)])
+            console.log("cached")
             canvasWays.current.ways = cache[concat(tileXCoordinate, tileYCoordinate)]
         } else {
             await requestWays(tileXCoordinate, tileYCoordinate).then(ways => canvasWays.current = ways)
@@ -84,42 +85,8 @@ function Canvas (props) {
 
         // Stroke road outline
         ctx.beginPath();
-        ctx.strokeStyle = '#3f3f3f'
+        ctx.strokeStyle = 'rgba(103,103,103,0.78)'
         ctx.lineWidth = 3
-        for (let i = 0; i < canvasWays.current.ways.length; i++) {
-
-            // Instantiate coordinates
-            let x1 = convertX(canvasWays.current.ways[i].startLon) //x coordinate for start node
-            let y1 = convertY(canvasWays.current.ways[i].startLat) //y coordinate for start node
-            let x2 = convertX(canvasWays.current.ways[i].endLon) //x coordinate for end node
-            let y2 = convertY(canvasWays.current.ways[i].endLat) //y coordinate for end node
-
-            // Instantiate name and type properties
-            let name = canvasWays.current.ways[i].name
-            let type = canvasWays.current.ways[i].type
-
-            // Instantiate trigonometry for label orientation
-            let angle = 0;
-            let adj = x2 - x1
-            let opp = y2 - y1
-            if (x1 < x2 && y1 < y2 || x1 < x2 && y1 > y2) { // NE, SE
-                angle = Math.asin(-(opp) / Math.sqrt(Math.pow(adj, 2) + Math.pow(opp, 2)))
-            } else if (x1 > x2 && y1 < y2 || x1 > x2 && y1 > y2) { // NW
-                angle = Math.asin((opp) / Math.sqrt(Math.pow(adj, 2) + Math.pow(opp, 2)))
-            }
-
-            // Color handling
-            if (type != null && type !== "") {
-                ctx.moveTo(x1, y1)
-                ctx.lineTo(x2, y2)
-            }
-        }
-        ctx.stroke() // finishes path
-
-        // Stroke road
-        ctx.beginPath();
-        ctx.strokeStyle = '#b6b6b6'
-        ctx.lineWidth = 2
         for (let i = 0; i < canvasWays.current.ways.length; i++) {
 
             // Instantiate coordinates
@@ -131,15 +98,29 @@ function Canvas (props) {
             let name = canvasWays.current.ways[i].name
             let type = canvasWays.current.ways[i].type
 
-            // Instantiate trigonometry for label orientation
-            let angle = 0;
-            let adj = x2 - x1
-            let opp = y2 - y1
-            if (x1 < x2 && y1 < y2 || x1 < x2 && y1 > y2) { // NE, SE
-                angle = Math.asin(-(opp) / Math.sqrt(Math.pow(adj, 2) + Math.pow(opp, 2)))
-            } else if (x1 > x2 && y1 < y2 || x1 > x2 && y1 > y2) { // NW
-                angle = Math.asin((opp) / Math.sqrt(Math.pow(adj, 2) + Math.pow(opp, 2)))
+            // Color handling
+            ctx.save()
+            if (type != null && type !== "") {
+                ctx.moveTo(x1, y1)
+                ctx.lineTo(x2, y2)
             }
+        }
+        ctx.stroke() // finishes path
+
+        // Stroke road
+        ctx.beginPath();
+        ctx.strokeStyle = '#c5c5c5'
+        ctx.lineWidth = 2
+        for (let i = 0; i < canvasWays.current.ways.length; i++) {
+
+            // Instantiate coordinates
+            let x1 = convertX(canvasWays.current.ways[i].startLon, tileXCoordinate) //x coordinate for start node
+            let y1 = convertY(canvasWays.current.ways[i].startLat, tileYCoordinate) //y coordinate for start node
+            let x2 = convertX(canvasWays.current.ways[i].endLon, tileXCoordinate) //x coordinate for end node
+            let y2 = convertY(canvasWays.current.ways[i].endLat, tileYCoordinate) //y coordinate for end node
+            // Instantiate name and type properties
+            let name = canvasWays.current.ways[i].name
+            let type = canvasWays.current.ways[i].type
 
             // Color handling
             ctx.save()
@@ -177,7 +158,6 @@ function Canvas (props) {
 
         // Stroke labels
         ctx.beginPath();
-        ctx.strokeStyle = '#9b9b9b'
         ctx.fillStyle = 'black'
         ctx.globalAlpha = 1
         ctx.lineWidth = 3
