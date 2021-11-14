@@ -1,6 +1,4 @@
 import React, { useRef, useEffect } from 'react'
-import Coords from './objects/Coords'
-import Way from './objects/Way'
 
 
 function Canvas (props) {
@@ -8,60 +6,37 @@ function Canvas (props) {
     const canvasWays = useRef(null)
     const canvasRef = useRef(null)
 
-    // Way_ID, Type, idk, node1Id, node2ID
-    // let way1 = new Way(1, 'road', null, 1, 2)
-    // let way2 = new Way(2, 'road', null, 2, 3)
-    // let way3 = new Way(3, 'road', null, 3, 4)
-    // let way4 = new Way(4, 'road', null, 4, 1)
-    // let coords1 = new Coords(41.825432, -71.393321);
-    // let coords2 = new Coords(41.82421, -71.401231);
-    // let coords3 = new Coords(41.82734, -71.40321);
-    // let coords4 = new Coords(41.825343, -71.40543);
-    // const nodeMap = {
-    //     1: coords1,
-    //     2: coords2,
-    //     3: coords3,
-    //     4: coords4
-    // }
-    // let ways = [way1,way2, way3, way4]
-
     let INIT_MAX_LAT = 41.828147
     let INIT_MIN_LAT = 41.823142
     let INIT_MAX_LON = -71.392231
     let INIT_MIN_LON = -71.407971
 
-    let tileX = INIT_MAX_LON - INIT_MIN_LON // 0.01574 * 38119.44091 -> 600
-    let tileY = INIT_MAX_LAT - INIT_MIN_LAT // 0.005005 * 139860.1399 -> 700
+    let tileWidth = INIT_MAX_LON - INIT_MIN_LON // 0.01574 * 38119.44091 -> 600
+    let tileHeight = INIT_MAX_LAT - INIT_MIN_LAT // 0.005005 * 139860.1399 -> 700
 
     const mapMinLat = 40.1581762
     const mapMaxLat = 42.0952906
     const mapMinLon = -73.7485663
     const mapMaxLon = -70.5590942
+    let convertY = function(latitude, tileYCoord) {
+        return (mapMinLat + tileHeight * (tileYCoord + 1) - latitude) * (400 / tileHeight)
+    }
+    let convertX = function(longitude, tileXCoord) {
+        return (longitude - (mapMinLon + tileWidth * tileXCoord)) * (700 / tileWidth)
+    }
+    let concat = function(str1, str2) {return String(str1).concat(":", String(str2))}
 
-
-
-    // caching old version
-
-    // let tileArray = new Array(203) // 203 is the number of tileX that fits in entire map data
-    // for (let i = 0; i < 203; i++) {
-    //     for (let j = 0; j < 388; j++) {
-    //         tileArray[i][j] = []
-    //     }
-    // }
-    // console.log(tileArray)
-    // let cache = []
-
+    let cache = {}
 
     /**
      * returns ways
      * @returns {Promise<unknown>}
      */
     async function requestWays(tileXCoord, tileYCoord) {
-        const maxLat = mapMinLat + tileY * (tileYCoord + 1)
-        const minLat = mapMinLat + tileY * tileYCoord
-        const maxLon = mapMinLon + tileX * (tileXCoord + 1)
-        const minLon = mapMinLon + tileX * tileXCoord
-
+        const maxLat = mapMinLat + tileHeight * (tileYCoord + 1)
+        const minLat = mapMinLat + tileHeight * tileYCoord
+        const maxLon = mapMinLon + tileWidth * (tileXCoord + 1)
+        const minLon = mapMinLon + tileWidth * tileXCoord
         console.log(maxLat, minLat, maxLon, minLon)
 
         return new Promise( (resolve, reject) => {
@@ -76,7 +51,7 @@ function Canvas (props) {
                     body: JSON.stringify([maxLat, minLat, maxLon, minLon])
                 }).then(response => response.json())
                     .then(response => {
-                        console.log("Response:", response)
+                        // console.log("Response:", response)
                         if('error' in response) {
                             if (response.error === undefined) {
                                 alert("An error occurred")
@@ -85,7 +60,8 @@ function Canvas (props) {
                             }
                             reject()
                         } else {
-                            console.log("ways:", response[0])
+                            cache[concat(tileXCoord, tileYCoord)] = response
+                            // console.log("ways:", response[0])
                             resolve( {
                                 "ways" : response
                             })
@@ -95,19 +71,16 @@ function Canvas (props) {
         )
     }
 
-    async function draw(tileXCoord, tileYCoord, ctx) {
-
-        await requestWays(tileXCoord, tileYCoord).then(ways => canvasWays.current = ways)
+    async function draw(tileXCoordinate, tileYCoordinate, ctx) {
+        console.log(tileXCoordinate, tileYCoordinate)
+        if (concat(tileXCoordinate, tileYCoordinate) in cache) {
+            // console.log("cached array: " + cache[concat(tileXCoordinate, tileYCoordinate)])
+            canvasWays.current.ways = cache[concat(tileXCoordinate, tileYCoordinate)]
+        } else {
+            await requestWays(tileXCoordinate, tileYCoordinate).then(ways => canvasWays.current = ways)
+        }
 
         let alreadyDrawn = [] //keeps track of street names we've already drawn
-        // Cycle through all the lines and draw them
-
-        let convertY = function(latitude) {
-            return (mapMinLat + tileY * (tileYCoord + 1) - latitude) * (600 / tileY)
-        }
-        let convertX = function(longitude) {
-            return (longitude - (mapMinLon + tileX * tileXCoord)) * (600 / tileX)
-        }
 
         // Stroke road outline
         ctx.beginPath();
@@ -150,11 +123,10 @@ function Canvas (props) {
         for (let i = 0; i < canvasWays.current.ways.length; i++) {
 
             // Instantiate coordinates
-            let x1 = convertX(canvasWays.current.ways[i].startLon) //x coordinate for start node
-            let y1 = convertY(canvasWays.current.ways[i].startLat) //y coordinate for start node
-            let x2 = convertX(canvasWays.current.ways[i].endLon) //x coordinate for end node
-            let y2 = convertY(canvasWays.current.ways[i].endLat) //y coordinate for end node
-            console.log(x1, y1, x2, y2)
+            let x1 = convertX(canvasWays.current.ways[i].startLon, tileXCoordinate) //x coordinate for start node
+            let y1 = convertY(canvasWays.current.ways[i].startLat, tileYCoordinate) //y coordinate for start node
+            let x2 = convertX(canvasWays.current.ways[i].endLon, tileXCoordinate) //x coordinate for end node
+            let y2 = convertY(canvasWays.current.ways[i].endLat, tileYCoordinate) //y coordinate for end node
             // Instantiate name and type properties
             let name = canvasWays.current.ways[i].name
             let type = canvasWays.current.ways[i].type
@@ -186,10 +158,10 @@ function Canvas (props) {
         for (let i = 0; i < canvasWays.current.ways.length; i++) {
 
             // Instantiate coordinates
-            let x1 = convertX(canvasWays.current.ways[i].startLon) //x coordinate for start node
-            let y1 = convertY(canvasWays.current.ways[i].startLat) //y coordinate for start node
-            let x2 = convertX(canvasWays.current.ways[i].endLon) //x coordinate for end node
-            let y2 = convertY(canvasWays.current.ways[i].endLat) //y coordinate for end node
+            let x1 = convertX(canvasWays.current.ways[i].startLon, tileXCoordinate) //x coordinate for start node
+            let y1 = convertY(canvasWays.current.ways[i].startLat, tileYCoordinate) //y coordinate for start node
+            let x2 = convertX(canvasWays.current.ways[i].endLon, tileXCoordinate) //x coordinate for end node
+            let y2 = convertY(canvasWays.current.ways[i].endLat, tileYCoordinate) //y coordinate for end node
 
             // Instantiate name and type properties
             let name = canvasWays.current.ways[i].name
@@ -212,10 +184,10 @@ function Canvas (props) {
         for (let i = 0; i < canvasWays.current.ways.length; i++) {
 
             // Instantiate coordinates
-            let x1 = convertX(canvasWays.current.ways[i].startLon) //x coordinate for start node
-            let y1 = convertY(canvasWays.current.ways[i].startLat) //y coordinate for start node
-            let x2 = convertX(canvasWays.current.ways[i].endLon) //x coordinate for end node
-            let y2 = convertY(canvasWays.current.ways[i].endLat) //y coordinate for end node
+            let x1 = convertX(canvasWays.current.ways[i].startLon, tileXCoordinate) //x coordinate for start node
+            let y1 = convertY(canvasWays.current.ways[i].startLat, tileYCoordinate) //y coordinate for start node
+            let x2 = convertX(canvasWays.current.ways[i].endLon, tileXCoordinate) //x coordinate for end node
+            let y2 = convertY(canvasWays.current.ways[i].endLat, tileYCoordinate) //y coordinate for end node
 
             // Instantiate name and type properties
             let name = canvasWays.current.ways[i].name
@@ -235,7 +207,7 @@ function Canvas (props) {
             ctx.save()
             if (type != null && type !== "") {
                 if (!alreadyDrawn.includes(name)) {
-                    ctx.font = "12px Arial"
+                    ctx.font = "10px Arial"
                     ctx.translate(x1, y1)
                     ctx.rotate(angle)
                     ctx.textAlign = "center"
@@ -251,14 +223,41 @@ function Canvas (props) {
     useEffect( () => {
 
         const canvas = canvasRef.current
-        canvas.width = 600
-        canvas.height = 600
+        canvas.width = 700
+        canvas.height = 400
         const ctx = canvas.getContext('2d')
-
-
+        let tileXCoord = 148.6
+        let tileYCoord = 332.7
         //Our draw come here
-        draw(148.7, 332.5, ctx)
-        // cache.push(ctx.getImageData())
+
+        draw(tileXCoord, tileYCoord, ctx)
+
+        function panHandler(event) {
+            console.log("Clearing canvas")
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            if (event === "lt-btn") {
+                console.log("Panning left")
+                tileXCoord = tileXCoord - 1
+            } else if (event === "rt-btn") {
+                tileXCoord = tileXCoord + 1
+            } else if (event === "up-btn") {
+                tileYCoord = tileYCoord + 1
+            } else if (event === "dn-btn") {
+                tileYCoord = tileYCoord - 1
+            }
+            draw(tileXCoord, tileYCoord, ctx)
+        }
+
+        const left = document.getElementById("lt-btn")
+        const right = document.getElementById("rt-btn")
+        const up = document.getElementById("up-btn")
+        const down = document.getElementById("dn-btn")
+
+        left.addEventListener("click", function(){panHandler(left.id)}, false)
+        right.addEventListener("click", function(){panHandler(right.id)}, false)
+        up.addEventListener("click", function(){panHandler(up.id)}, false)
+        down.addEventListener("click", function(){panHandler(down.id)}, false)
+
     }, [draw])
 
     return <canvas ref={canvasRef} {...props}/>

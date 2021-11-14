@@ -3,6 +3,7 @@ import Canvas from './components/Canvas'
 import CurrentlyLoaded from "./components/CurrentlyLoaded";
 import GettingRoute from "./components/GettingRoute";
 import Routes from "./components/Routes";
+import Navigation from "./components/Navigation"
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Button from "react-bootstrap/Button";
 import React from "react";
@@ -21,6 +22,9 @@ function App() {
               </div>
               <div>
                   <Routes/>
+              </div>
+              <div>
+                  <Navigation/>
               </div>
 
           </div>
