@@ -86,11 +86,9 @@ function Canvas (props) {
     const draw = async ctx => {
 
         await requestWays().then(ways => canvasWays.current = ways)
-
         ctx.fillStyle = '#000000'
         ctx.borderColor = 'black'
         ctx.beginPath()
-
 
 
         let alreadyDrawn = [] //keeps track of street names we've already drawn
@@ -151,6 +149,7 @@ function Canvas (props) {
 
         //Our draw come here
         draw(ctx)
+        ctx.rotate(-90 * Math.PI / 180);
     }, [draw])
 
     return <canvas ref={canvasRef} {...props}/>
